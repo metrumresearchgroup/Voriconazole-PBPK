@@ -114,7 +114,7 @@ double scale_factor_H = MPPGL*Vli*1000; //hepatic (mg)
 double scale_factor_G = MPPGI*VguWall*1000; //intestinal (mg)                                         
 
 //intrinsic hepatic and intestinal clearances calculation
-double CLintHep = (VmaxH/KmH)*scale_factor_H*60*1e-6; //(L/hr); using extraction ratio worsens predictions a bit
+double CLintHep = (VmaxH/KmH)*scale_factor_H*60*1e-6; //(L/hr)
 double CLintGut = (VmaxG/KmG)*scale_factor_G*60*1e-6; //(L/hr)
 CLintHep = CLintHep/fumic; 
 CLintGut = CLintGut/fumic;
