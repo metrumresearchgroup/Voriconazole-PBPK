@@ -5,10 +5,10 @@
 #Note: All digitization was done using WebPlotDigitizer version 3.12 developed by Ankit Rohatgi https://automeris.io/WebPlotDigitizer
 
 #loading libraries
+.libPaths("lib")
+library(dplyr)
+library(ggplot2)
 library(mrgsolve)  #https://github.com/metrumresearchgroup/mrgsolve
-library(metrumrg)  #https://github.com/metrumresearchgroup/metrumrg
-library(magrittr)
-library(tidyverse)
 library(sensitivity)
 source("calcKp_PT.R")
 source("genSamples.R")
@@ -368,7 +368,7 @@ modRun <- function(X){
 }
 
 #generate random samples using pseudo=random generator
-set.seed(24536)
+#set.seed(24536)  wrong one
 n <- 20000  #number of samples per parameter
 l <- list(BP=c(1/3,1*3),
           Kpmu=c(2.82/3,2.82*3),
