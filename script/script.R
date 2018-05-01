@@ -1,5 +1,8 @@
 #This file contains the scripts used for simulations and plots for the voriconazole PBPK manuscript
 #First thing is to set working directory to "script" directory using the function: setwd()
+#CAUTION: Chunk 4 takes several hours to run so you might want to comment this out before running the whole script.
+#Note: All observed data and Zane and Thakker predictions were digitized from Zane and Thakker (ZT) paper. Zane and Thakker. Clin Pharmacokinet (2014) 53:1171–1182
+#Note: All digitization was done using WebPlotDigitizer version 3.12 developed by Ankit Rohatgi https://automeris.io/WebPlotDigitizer
 
 #loading libraries
 library(mrgsolve)  #https://github.com/metrumresearchgroup/mrgsolve
@@ -18,7 +21,7 @@ model2 <- mread_cache("model2", "../model")  # model2 (Pediatric physiology)
 ###################################################################################################
 ######################## Chunk 1: Calculate partition coefficients ################################
 ###################################################################################################
-## This chink calculates tissue:plasma partition coefficients used in models 1&2 using Poulin & Theil
+## This chunk calculates tissue:plasma partition coefficients used in models 1&2 using Poulin & Theil
 ## method https://jpharmsci.org/article/S0022-3549(16)30889-9/fulltext
 # First define Voriconazole physicochemical properties
 logP <- 2.56  #oil:water partition
@@ -39,8 +42,8 @@ Kp
 ## files whose numbers follow the ZT publication numbering
 
 ## Figure 3a; Model 1 with 4 mg/kg IV infusion ##
-load("../data/Fig3a_obs.Rda")  #load observed data from fig 3a in the ZT paper
-load("../data/Fig3a_ZT.Rda")  #load ZT redicitons from fig 3a in the ZT paper
+load("../data/Fig3a_obs.Rda")  #load observed data (digitized) from fig 3a in the ZT paper
+load("../data/Fig3a_ZT.Rda")  #load ZT redicitons (digitized) from fig 3a in the ZT paper
 wt <- 73  #adult body weight
 dose <- 4*wt  
 rate <- 4*wt
@@ -74,8 +77,8 @@ gp1
 
 
 ## Figure 3b; Model 2 with 4 mg/kg IV infusion ##
-load("../data/Fig4a_obs.Rda")  #load observed data from fig 3a in the ZT paper
-load("../data/Fig4a_ZT.Rda")  #load ZT redicitons from fig 3a in the ZT paper
+load("../data/Fig4a_obs.Rda")  #load observed data (digitized) from fig 3a in the ZT paper
+load("../data/Fig4a_ZT.Rda")  #load ZT redicitons (digitized) from fig 3a in the ZT paper
 wt <- 19  #pediatric body weight
 dose <- 4*wt  
 rate <- 3*wt
@@ -109,8 +112,8 @@ gp2
 
 
 #Figure 3c; Model 1 with 200 mg PO 
-load("../data/Fig3b_obs.Rda")  #load observed data from fig 3b in the ZT paper
-load("../data/Fig3b_ZT.Rda")  ##load ZT predictions from fig 3b in the ZT paper
+load("../data/Fig3b_obs.Rda")  #load observed data (digitized) from fig 3b in the ZT paper
+load("../data/Fig3b_ZT.Rda")  ##load ZT predictions (digitized) from fig 3b in the ZT paper
 wt <- 73
 dose <- 200
 cmt <- "D"
@@ -143,8 +146,8 @@ gp3
 
 
 #Figure 3d; Model 2 with 4 mg/kg PO 
-load("../data/Fig4d_obs.Rda")  ##load observed data from fig 4d in the ZT paper
-load("../data/Fig4d_ZT.Rda")  ##load ZT predictions from fig 4d in the ZT paper
+load("../data/Fig4d_obs.Rda")  ##load observed data (digitized) from fig 4d in the ZT paper
+load("../data/Fig4d_ZT.Rda")  ##load ZT predictions (digitized) from fig 4d in the ZT paper
 wt <- 19
 dose <- 4*wt
 cmt <- "D"
@@ -419,8 +422,8 @@ gp
 ###################################################################################################
 ## This chunk runs parameter optimization for parameters: Kpmu, BP and sigma2 (residual error variance)
 ## Optimization was done using maximum likelihood (ML) with the adult 4 mg/kg IV infusion data
-load("../data/Fig3a_obs.Rda") #load observed data for figure 3a in ZT
-load("../data/Fig3a_ZT.Rda") #load Simcyp predictions for figure 3a in ZT
+load("../data/Fig3a_obs.Rda") #load observed data (digitized) for figure 3a in ZT
+load("../data/Fig3a_ZT.Rda") #load Simcyp predictions (digitized) for figure 3a in ZT
 sampl <- obs$time  #sampling times from observed data
 wt <- 73
 dose <- 4*wt
@@ -464,8 +467,8 @@ model3 <- param(model1, list(Kpmu=0.78, BP=1.21))
 model4 <- param(model2, list(Kpmu=0.78, BP=1.21))  
 
 ## Figure 5a; Model 3 with 4 mg/kg IV infusion dosing
-load("../data/Fig3a_obs.Rda")  ##load observed data from fig 3a in the ZT paper
-load("../data/Fig3a_ZT.Rda")  ##load ZT predictions from fig 3a in the ZT paper
+load("../data/Fig3a_obs.Rda")  ##load observed data (digitized) from fig 3a in the ZT paper
+load("../data/Fig3a_ZT.Rda")  ##load ZT predictions (digitized) from fig 3a in the ZT paper
 wt <- 73
 dose <- 4*wt
 rate <- 4*wt
@@ -497,8 +500,8 @@ gp1 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="obser
 gp1
 
 #Figure 5b;  Model 4 with 4 mg/kg IV infusion
-load("../data/Fig4a_obs.Rda")  ##load observed data from fig 4a in the ZT paper
-load("../data/Fig4a_ZT.Rda")  ##load ZT predictions from fig 4a in the ZT paper
+load("../data/Fig4a_obs.Rda")  ##load observed data (digitized) from fig 4a in the ZT paper
+load("../data/Fig4a_ZT.Rda")  ##load ZT predictions (digitized) from fig 4a in the ZT paper
 wt <- 19
 dose <- 4*wt
 rate <- 3*wt
@@ -531,8 +534,8 @@ gp2
 
 
 #Figure 5c; Model 3 with 200 mg PO 
-load("../data/Fig3b_obs.Rda")  ##load observed data from fig 3b in the ZT paper
-load("../data/Fig3b_ZT.Rda")  ##load ZT predictions from fig 3b in the ZT paper
+load("../data/Fig3b_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
+load("../data/Fig3b_ZT.Rda")  ##load ZT predictions (digitized) from fig 3b in the ZT paper
 wt <- 73
 dose <- 200
 cmt <- "D"
@@ -564,8 +567,8 @@ gp3
 
 
 #Figure 5d; Model 4 with 4 mg/kg IV infusion 
-load("../data/Fig4d_obs.Rda")  ##load observed data from fig 4d in the ZT paper
-load("../data/Fig4d_ZT.Rda")  ##load ZT predictions from fig 4d in the ZT paper
+load("../data/Fig4d_obs.Rda")  ##load observed data (digitized) from fig 4d in the ZT paper
+load("../data/Fig4d_ZT.Rda")  ##load ZT predictions (digitized) from fig 4d in the ZT paper
 wt <- 19
 dose <- 4*wt
 cmt <- "D"
@@ -602,8 +605,8 @@ model5 <- param(model3, list(MPPGI=1.44))
 model6 <- param(model4, list(MPPGI=1.24))
 
 #Figure 5e; Model 5 with 200 mg PO 
-load("../data/Fig3b_obs.Rda")  ##load observed data from fig 3b in the ZT paper
-load("../data/Fig3b_ZT.Rda")  ##load ZT predictions from fig 3b in the ZT paper
+load("../data/Fig3b_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
+load("../data/Fig3b_ZT.Rda")  ##load ZT predictions (digitized) from fig 3b in the ZT paper
 wt <- 73
 dose <- 200
 cmt <- "D"
@@ -635,8 +638,8 @@ gp5
 
 
 #Figure 5f; Model 6 with 4 mg/kg PO 
-load("../data/Fig4d_obs.Rda")  #load observed data from fig 4d in the ZT paper
-load("../data/Fig4e_ZT.Rda")  ##load ZT_Gu from fig 4e in the ZT paper
+load("../data/Fig4d_obs.Rda")  #load observed data (digitized) from fig 4d in the ZT paper
+load("../data/Fig4e_ZT.Rda")  ##load ZT_Gu data (digitized) from fig 4e in the ZT paper
 wt <- 19
 dose <- 4*wt
 cmt <- "D"
