@@ -1,4 +1,4 @@
-## This script installs all required packages
+## This script installs all required packages and creates a "lib" directory
 ## Before you proceed make the script directory your working directory with the function setwd()
 scriptDir <- getwd()
 pkgDir <- file.path(scriptDir, "pkg")

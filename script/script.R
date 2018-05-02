@@ -13,7 +13,7 @@ library(sensitivity)
 source("calcKp_PT.R")
 source("genSamples.R")
 
-#compiling the models
+#compile models
 model1 <- mread_cache("model1", "../model")  # model1 (Adult physiology)
 model2 <- mread_cache("model2", "../model")  # model2 (Pediatric physiology)
 
@@ -344,7 +344,7 @@ p12
 ###################################################################################################
 ## This chunk reproduces Figure S1 Sobol global sensitivity analysis
 ## Analysis is done on model 1 with 4 mg/kg IV infusion dosing
-## CAUTION: This chunk takes a few hours to run
+## CAUTION: This chunk takes several hours to run
 wt <- 73
 dose <- 4*wt
 rate <- 4*wt
@@ -368,7 +368,7 @@ modRun <- function(X){
 }
 
 #generate random samples using pseudo=random generator
-#set.seed(24536)  wrong one
+set.seed(1751)
 n <- 20000  #number of samples per parameter
 l <- list(BP=c(1/3,1*3),
           Kpmu=c(2.82/3,2.82*3),
@@ -410,7 +410,8 @@ gp <- ggplot(data=st, aes(x=params, y=original, group=index, shape=index)) +
   geom_point(position=position_dodge(width=0.5)) +
   geom_errorbar(aes(x=params, ymin=min, ymax=max), width=0, position=position_dodge(width=0.5)) +
   labs(y="Index value", x="parameter") +
-  theme_bw()
+  theme_bw() +
+  theme(axis.text=element_text(size=12), axis.title=element_text(size=14)) 
 gp
 
 ###################################################################################################
