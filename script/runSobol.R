@@ -1,4 +1,5 @@
 ## This script runs the Sobol global sensitivity analysis to reproduce Figure S1
+## CAUTION: This script takes several hours to run
 ## load libraries
 #loading libraries
 .libPaths("lib")
@@ -89,7 +90,7 @@ gp_sobol <- ggplot(data=st, aes(x=params, y=original, group=index, shape=index))
   theme(axis.text=element_text(size=12), axis.title=element_text(size=14)) 
 gp_sobol
 
-save.image(file = "sobol_all_objects.RData")  #save workspace objects
+#save.image(file = "sobol_all_objects.RData")  #can be uncommented if you want to save workspace objects
 
 ###################################################################################################
 ###################################################################################################

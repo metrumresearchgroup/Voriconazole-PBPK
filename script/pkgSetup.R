@@ -1,6 +1,6 @@
 ## This script installs all required packages and creates a "lib" directory
 ## Before you proceed make the script directory your working directory with the function setwd()
-author <- c("kyleb")
+author <- c("--")
 
 pkgs <- c("dplyr", "mrgsolve", "sensitivity", "ggplot2", "magrittr")
 
