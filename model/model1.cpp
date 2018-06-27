@@ -1,53 +1,58 @@
-//Model 1; Voriconazole PBPK model for a typical adult male physiology
-$PROB model1
+//Voriconazole PBPK model for a typical adult male
+
+
+$PROB voriPBPK_Adult
 
 
 $PARAM 
-//References for the following parameters are:
-//http://journals.sagepub.com/doi/abs/10.1016/S0146-6453%2803%2900002-2
-//http://dmd.aspetjournals.org/content/38/1/25.long
-//https://link.springer.com/article/10.1007%2Fs40262-014-0181-y
-Ka = 0.849 //absorption rate constant(/hr) 
 fup = 0.42 //fraction of unbound drug in plasma
 fumic = 0.711 //fraction of unbound drug in microsomes
 WEIGHT = 73 //(kg)
-MPPGL = 30.3 //adult mg microsomal protein per g liver (mg/g)
-MPPGI = 0 //adult mg microsomal protein per g intestine (mg/g); 0 indicates no intestinal clearance
-C_OUTPUT = 6.5 //cardiac output (l/min)
-VmaxH = 40 //adult hepatic Vmax (pmol/min/mg)
+MPPGL = 30.3 //adult mg microsomal protein per g liver (mg/g); from Yanni, Souzan et al. (2009)
+MPPGI = 30.3 //adult mg microsomal protein per g intestine (mg/g)
+C_OUTPUT = 6.5 //(l/min); from ICRP Publication 89
+VmaxH = 40 //adult hepatic Vmax (pmol/min/mg); from Yanni, Souzan et al. (2009)
 VmaxG = 40 //adult intestinal Vmax (pmol/min/mg)
-KmH = 9.3 //adult hepatic Km (uM)
+KmH = 9.3 //adult hepatic Km (uM); from Yanni, Souzan et al. (2009)
 KmG = 9.3 //adult intestinal Km (uM)
 BP = 1 //blood to plasma ratio; initial estimate
 
-//partition coefficients estimated by Poulin and Theil method https://jpharmsci.org/article/S0022-3549(16)30889-9/fulltext
-//calculated using the script calcKp_PT.R
-Kpad = 9.89  //adipose
-Kpbo = 7.91  //bone
-Kpbr = 7.35  //brain
-Kpgu = 5.82  //gut
-Kphe = 1.95  //heart
-Kpki = 2.9  //kidneys
-Kpli = 4.66  //liver
-Kplu = 0.83  //lungs
-Kpmu = 2.94  //muscle
-Kpsp = 2.96  //spleen
-Kpre = 4 //Rest of body; calculated as average of non adipose Kps
+//partition coefficients estimated by Poulin and Theil method (2001)
+Kpad = 9.89, Kpbo = 7.91, Kpbr = 7.35, Kpgu = 5.82, Kphe = 1.95, Kpki = 2.9, Kpli = 4.66
+Kplu = 0.83, Kpmu = 2.94, Kpsp = 2.96, Kpre = 4 //calculated as average of non adipose Kps
+
+//absorption model parameters
+MW = 349.317  //(g/mol)
+logP = 2.56  //log10 octanol oil:water partition coefficient; will be used as proxy for membrane affinity; preferably we will have phospholipid bilayer:water partition instead
+S_lumen = 0.39*1000  //(mg/L) voriconazole intestinal lumen solubility https://www.ncbi.nlm.nih.gov/pubmed/24557773
+L = 280  //(cm) small intestine length; from ICRP Publication 89
+d = 2.5  //(cm) diameter of small intestine lumen
+PF = 1.57  //3  //2.29  //average of 1.57 and 3; 1.57  //plicae circulare factor https://www.ncbi.nlm.nih.gov/pubmed/24694282
+VF = 6.5  //villi factor
+MF = 13  //microvilli factor
+ITT = 3.32  //(h) small intestine transit time; https://www.ncbi.nlm.nih.gov/pubmed/25986421
+A = 7440  //this and the rest of parameters are constants in the permeability calculation equation https://www.ncbi.nlm.nih.gov/pubmed/15267240
+B = 1e7
+alpha = 0.6
+beta = 4.395
+fabs = 1  //absorption factor to manipulate ka
+fdis = 1  //disappearance from gut lumen factor to manipulate kd
+fperm = 1  //permeability factor to manipulate Pm
 
 
 $CMT 
-D ADIPOSE BRAIN GUT HEART BONE 
+GUTLUMEN GUTWALL GUT ADIPOSE BRAIN HEART BONE 
 KIDNEY LIVER LUNG MUSCLE SPLEEN REST 
 ART VEN
 
 
 $MAIN
-//Tissue volumes (L); http://journals.sagepub.com/doi/abs/10.1016/S0146-6453%2803%2900002-2
+//Tissue volumes (L); from ICRP Publication 89
 double Vad = 18.2; //adipose
-double Vbo = 10.5; //bone
+double Vbo = 10.5; //bone; whole skeleton
 double Vbr = 1.45; //brain
-double VguWall = 0.65;  //gut wall
-double VguLumen = 0.35; //gut lumen
+double VguWall = 0.65;  //just smal intestine;  1.21;  //gut wall
+double VguLumen = 0.35; //just small intestines; 0.9; //gut lumen
 double Vgu = VguWall + VguLumen; //total gut
 double Vhe = 0.33; //heart
 double Vki = 0.31; //kidneys
@@ -60,7 +65,7 @@ double Vve = 0.705*Vbl; //venous blood
 double Var = 0.295*Vbl; //arterial blood
 double Vre = WEIGHT - (Vli+Vki+Vsp+Vhe+Vlu+Vbo+Vbr+Vmu+Vad+VguWall+Vbl); //volume of rest of the body compartment
 
-//fractions of tissue blood flows; http://journals.sagepub.com/doi/abs/10.1016/S0146-6453%2803%2900002-2
+//fractions of tissue blood flows; from ICRP Publication 89
 double FQad = 0.05;
 double FQbo = 0.05;  
 double FQbr = 0.12;
@@ -87,13 +92,21 @@ double Qtot = Qli + Qki + Qbo + Qhe + Qmu + Qad + Qbr;
 double Qre = CO - Qtot;
 double Qlu = CO;
 
+//absorption model parameters derivation
+double SA_abs = M_PI*L*d*PF*VF*MF*1e-4;  //(m^2) mucosal absorption surface area https://www.ncbi.nlm.nih.gov/pubmed/24694282
+double SA_basal = M_PI*L*d*PF*VF*1e-4;  //(m^2) basal membrane surface area https://www.ncbi.nlm.nih.gov/pubmed/24694282
+double MA = pow(10,logP);  //membrane affinity
+double MW_eff = MW - (3*17);  //effective molecular weight; voriconazole has 3 F atoms so we subtract 17 mass units per atom https://www.ncbi.nlm.nih.gov/pubmed/15267240
+double Peff = fperm*A*((pow(MW_eff,(-alpha-beta))*MA)/(pow(MW_eff,(-alpha)) + B*pow(MW_eff,(-beta))*MA) * 1e-2 * 3600);  //(m/h) intestinal permeability 
+double kd = fdis*Peff*SA_abs*1000/VguLumen;  //(h-1) rate constant for drug disappearing from lumen and into enterocytes
+double ka = fabs*Peff*SA_basal*1000/VguWall; //(h-1) rate constant for drug absorption from enterocytes to gut circulation
+double kt = 1/ITT;  //(h-1) intestinal transit rate constatnt
 
 $ODE
 //Calculation of tissue drug concentrations (mg/L)
 double Cadipose = ADIPOSE/Vad;
 double Cbone = BONE/Vbo;
 double Cbrain = BRAIN/Vbr; 
-double Cgut = GUT/VguWall; 
 double Cheart = HEART/Vhe; 
 double Ckidney = KIDNEY/Vki;
 double Cliver = LIVER/Vli; 
@@ -103,7 +116,9 @@ double Cspleen = SPLEEN/Vsp;
 double Crest = REST/Vre;
 double Carterial = ART/Var;
 double Cvenous = VEN/Vve;
-double Cgut_D = D/Vgu;
+double CgutLumen = GUTLUMEN/VguLumen;
+double CgutWall = GUTWALL/VguWall;
+double Cgut = GUT/VguWall;
 
 //Free Concentration Calculations
 double Cliverfree = Cliver*fup; 
@@ -114,7 +129,7 @@ double scale_factor_H = MPPGL*Vli*1000; //hepatic (mg)
 double scale_factor_G = MPPGI*VguWall*1000; //intestinal (mg)                                         
 
 //intrinsic hepatic and intestinal clearances calculation
-double CLintHep = (VmaxH/KmH)*scale_factor_H*60*1e-6; //(L/hr)
+double CLintHep = (VmaxH/KmH)*scale_factor_H*60*1e-6; //(L/hr); using extraction ratio worsens predictions a bit
 double CLintGut = (VmaxG/KmG)*scale_factor_G*60*1e-6; //(L/hr)
 CLintHep = CLintHep/fumic; 
 CLintGut = CLintGut/fumic;
@@ -122,13 +137,20 @@ CLintGut = CLintGut/fumic;
 //renal clearance
 double CLrenal = 0.096; //(L/hr); from Zane and Thakker (2014)
 
+//accounting for solubility
+double f = 1;
+if(CgutLumen > S_lumen){
+  f = 0;
+}
+
 //ODEs
-dxdt_D = -Ka*D - CLintGut*Cgut_D;
+dxdt_GUTLUMEN = - kd*VguLumen*(f*CgutLumen + (1-f)*S_lumen) - kt*GUTLUMEN;
+dxdt_GUTWALL = kd*VguLumen*(f*CgutLumen + (1-f)*S_lumen) - ka*GUTWALL - CLintGut*CgutWall;
+dxdt_GUT = ka*GUTWALL + Qgu*(Carterial - Cgut/(Kpgu/BP)); 
 dxdt_ADIPOSE = Qad*(Carterial - Cadipose/(Kpad/BP)); 
 dxdt_BRAIN = Qbr*(Carterial - Cbrain/(Kpbr/BP));
 dxdt_HEART = Qhe*(Carterial - Cheart/(Kphe/BP));
 dxdt_KIDNEY = Qki*(Carterial - Ckidney/(Kpki/BP)) - CLrenal*(Ckidneyfree/(Kpki/BP));
-dxdt_GUT = Ka*D + Qgu*(Carterial - Cgut/(Kpgu/BP)); 
 dxdt_LIVER = Qgu*(Cgut/(Kpgu/BP)) + Qsp*(Cspleen/(Kpsp/BP)) + Qha*(Carterial) - Qli*(Cliver/(Kpli/BP)) - 
   CLintHep*(Cliverfree/(Kpli/BP)); 
 dxdt_LUNG = Qlu*(Cvenous - Clung/(Kplu/BP));
