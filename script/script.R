@@ -114,7 +114,7 @@ load("../data/Fig3b_obs.Rda")  #load observed data (digitized) from fig 3b in th
 load("../data/Fig3b_ZT.Rda")  ##load ZT predictions (digitized) from fig 3b in the ZT paper
 wt <- 73
 dose <- 200
-cmt <- "D"
+cmt <- "GUTLUMEN"
 
 # simulate
 sim <- as.data.frame(model1 %>% 
@@ -148,7 +148,7 @@ load("../data/Fig4d_obs.Rda")  ##load observed data (digitized) from fig 4d in t
 load("../data/Fig4d_ZT.Rda")  ##load ZT predictions (digitized) from fig 4d in the ZT paper
 wt <- 19
 dose <- 4*wt
-cmt <- "D"
+cmt <- "GUTLUMEN"
 
 # simulate
 sim <- as.data.frame(model2 %>% 
@@ -168,6 +168,7 @@ gp4 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="obser
   scale_y_continuous(breaks = seq(0,100,1)) +
   #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
   scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
+  ylim(0,3) +
   theme_bw() + 
   theme(axis.title=element_text(size=12)) +
   theme(axis.text=element_text(size=10)) + 
@@ -458,7 +459,7 @@ load("../data/Fig3b_obs.Rda")  ##load observed data (digitized) from fig 3b in t
 load("../data/Fig3b_ZT.Rda")  ##load ZT predictions (digitized) from fig 3b in the ZT paper
 wt <- 73
 dose <- 200
-cmt <- "D"
+cmt <- "GUTLUMEN"
 
 sim <- as.data.frame(model3 %>% 
                             ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
@@ -491,7 +492,7 @@ load("../data/Fig4d_obs.Rda")  ##load observed data (digitized) from fig 4d in t
 load("../data/Fig4d_ZT.Rda")  ##load ZT predictions (digitized) from fig 4d in the ZT paper
 wt <- 19
 dose <- 4*wt
-cmt <- "D"
+cmt <- "GUTLUMEN"
 
 sim <- as.data.frame(model4 %>% 
                             ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
@@ -510,6 +511,7 @@ gp4 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="obser
   scale_y_continuous(breaks = seq(0,100,1)) +
   #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
   scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
+  ylim(0,3) +
   theme_bw() + 
   theme(axis.title=element_text(size=12)) +
   theme(axis.text=element_text(size=10)) + 
@@ -519,17 +521,16 @@ gp4 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="obser
 gp4
 
 
-## For figures 5e and 5f we will first generate models 5 and 6 from models 3 and 4 by using MPPGI
-## values calculated from corresponding MPPGL as: MPPGI = MPPGL/21 (see results in main text)
-model5 <- param(model3, list(MPPGI=1.44))
-model6 <- param(model4, list(MPPGI=1.24))
+## For figures 5e and 5f we will first generate models 5 and 6 from models 3 and 4 by using optimized P_eff values
+model5 <- param(model3, list(fperm=0.276))
+model6 <- param(model4, list(fperm=0.276))
 
 #Figure 5e; Model 5 with 200 mg PO 
 load("../data/Fig3b_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
 load("../data/Fig3b_ZT.Rda")  ##load ZT predictions (digitized) from fig 3b in the ZT paper
 wt <- 73
 dose <- 200
-cmt <- "D"
+cmt <- "GUTLUMEN"
 
 sim <- as.data.frame(model5 %>% 
                              ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
@@ -559,10 +560,10 @@ gp5
 
 #Figure 5f; Model 6 with 4 mg/kg PO 
 load("../data/Fig4d_obs.Rda")  #load observed data (digitized) from fig 4d in the ZT paper
-load("../data/Fig4e_ZT.Rda")  ##load ZT_Gu data (digitized) from fig 4e in the ZT paper
+load("../data/Fig4d_ZT.Rda")  ##load ZT_Gu data (digitized) from fig 4e in the ZT paper
 wt <- 19
 dose <- 4*wt
-cmt <- "D"
+cmt <- "GUTLUMEN"
 
 sim <- as.data.frame(model6 %>% 
                              ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
@@ -575,9 +576,47 @@ gp6 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="obser
   geom_line(data = sim, mapping = aes(y=Cvenous, x=time, col="sim"), lwd=1) + 
   scale_colour_manual(name='', values=c('sim'='black', 'ZT'='grey', 'observed'='black'), 
                       breaks=c("observed","ZT","sim"),
-                      labels=c("observed","ZT_Gu","model 6")) +
+                      labels=c("observed","ZT","model 6")) +
   guides(colour = guide_legend(override.aes = list(linetype=c(0,1,1), shape=c(16, NA, NA)))) +
   ggtitle("f  Pediatric 4 mg/kg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
+  scale_y_continuous(breaks = seq(0,100,1)) +
+  #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
+  scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
+  ylim(0,3) +
+  theme_bw() + 
+  theme(axis.title=element_text(size=12)) +
+  theme(axis.text=element_text(size=10)) + 
+  theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
+  theme(plot.title=element_text(size=15, face="bold")) +
+  theme(legend.text=element_text(size=10))
+gp6
+
+## For figures 5g and 5h we will first generate models 7 and 8 from models 5 and 6 by using MPPGI
+## values calculated from corresponding MPPGL as: MPPGI = MPPGL/25 (see results in main text)
+model7 <- param(model5, list(MPPGI=1.212))
+model8 <- param(model6, list(MPPGI=1.04))
+
+#Figure 5g; Model 7 with 200 mg PO 
+load("../data/Fig3b_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
+load("../data/Fig3b_ZT.Rda")  ##load ZT predictions (digitized) from fig 3b in the ZT paper
+wt <- 73
+dose <- 200
+cmt <- "GUTLUMEN"
+
+sim <- as.data.frame(model7 %>% 
+                       ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
+                       mrgsim(delta = 0.1, end = 12)) %>%
+  dplyr::filter(row_number() != 1)  #sets the mrgsolve dataframe
+
+gp7 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) + 
+  geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
+  geom_line(data = ZT, mapping = aes(x=time, y=ZT, col="ZT"), lwd=1) +
+  geom_line(data = sim, mapping = aes(y=Cvenous, x=time, col="sim"), lwd=1) + 
+  scale_colour_manual(name='', values=c('sim'='black', 'ZT'='grey', 'observed'='black'), 
+                      breaks=c("observed","ZT","sim"),
+                      labels=c("observed","ZT","model 7")) +
+  guides(colour = guide_legend(override.aes = list(linetype=c(0,1,1), shape=c(16, NA, NA)))) +
+  ggtitle("g   Adult 200 mg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
   scale_y_continuous(breaks = seq(0,100,1)) +
   #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
   scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
@@ -587,7 +626,238 @@ gp6 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="obser
   theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
   theme(plot.title=element_text(size=15, face="bold")) +
   theme(legend.text=element_text(size=10))
-gp6
+gp7
+
+
+#Figure 5f; Model 6 with 4 mg/kg PO 
+load("../data/Fig4d_obs.Rda")  #load observed data (digitized) from fig 4d in the ZT paper
+load("../data/Fig4d_ZT.Rda")  ##load ZT_Gu data (digitized) from fig 4e in the ZT paper
+ZT1 <- ZT
+load("../data/Fig4e_ZT.Rda")  ##load ZT_Gu data (digitized) from fig 4e in the ZT paper
+wt <- 19
+dose <- 4*wt
+cmt <- "GUTLUMEN"
+
+sim <- as.data.frame(model8 %>% 
+                       ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
+                       mrgsim(delta = 0.1, end = 12)) %>%
+  dplyr::filter(row_number() != 1)  #sets the mrgsolve dataframe
+
+gp8 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) + 
+  geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
+  geom_line(data = ZT, mapping = aes(x=time, y=ZT, col="ZT"), lwd=1, lty=2) +
+  geom_line(data = ZT1, mapping = aes(x=time, y=ZT, col="ZT1"), lwd=1, lty=1) +
+  geom_line(data = sim, mapping = aes(y=Cvenous, x=time, col="sim"), lwd=1) + 
+  scale_colour_manual(name='', values=c('sim'='black', 'ZT'='grey', 'ZT1'='grey', 'observed'='black'), 
+                      breaks=c("observed","ZT1","ZT","sim"),
+                      labels=c("observed","ZT", expression(ZT[Gu]),"model 8")) +
+  guides(colour = guide_legend(override.aes = list(linetype=c(0,1,2,1), shape=c(16, NA, NA, NA)))) +
+  ggtitle("h  Pediatric 4 mg/kg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
+  scale_y_continuous(breaks = seq(0,100,1)) +
+  #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
+  scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
+  ylim(0,3) +
+  theme_bw() + 
+  theme(axis.title=element_text(size=12)) +
+  theme(axis.text=element_text(size=10)) + 
+  theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
+  theme(plot.title=element_text(size=15, face="bold")) +
+  theme(legend.text=element_text(size=10))
+gp8
+
+
+###################################################################################################
+###################################################################################################
+
+###################################################################################################
+####################################### Chunk 6: Figure S2 #########################################
+###################################################################################################
+### sensitivity analyses for absorption parameters: permeability, intestinal transit time and solubility ###
+gp1 <- model3 %>%  
+  knobs(S_lumen=c(0.39*500, 0.39*1000, 0.39*2000), amt = 200, cmt = "GUTLUMEN", ii = 12, addl = 13, ss = 1, delta = 0.1, end = 12) %>% 
+  plot(Cvenous~., 
+       main=list(label=expression(S["int"]~(mg/mL)), cex=0.75), 
+       xlab=list(label="time (h)", cex=0.75),
+       ylab=list(label="Plasma concentration (mg/L)", cex=0.75), 
+       scale=list(cex=0.5), 
+       lty=1:3, 
+       col="black",
+       #auto.key=list(cex=2, lines=T, points=F),
+       key=list(space="top",
+                lines=list(col=c("black","black","black"), lty=1:3),
+                text=list(c("0.195","0.39","0.78"), cex=0.5)
+       ))
+gp1
+
+gp2 <- model3 %>% 
+  knobs(fperm=c(0.5, 1, 2), amt = 200, cmt = "GUTLUMEN", ii = 12, addl = 13, ss = 1, delta = 0.1, end = 12) %>% 
+  plot(Cvenous~., 
+       main=list(label=expression(paste("P"[eff], " x10",phantom()^{-4}," (cm/s)")), cex=0.75), 
+       xlab=list(label="time (h)", cex=0.75),
+       ylab=list(label="Plasma concentration (mg/L)", cex=0.75), 
+       scale=list(cex=0.5), 
+       lty=1:3, 
+       col="black",
+       #auto.key=list(cex=2, lines=T, points=F),
+       key=list(space="top",
+                lines=list(col=c("black","black","black"), lty=1:3),
+                text=list(c("0.073","0.145","0.29"), cex=0.5)
+       ))
+gp2
+
+gp3 <- model3 %>%
+  knobs(ITT=c(3.32/2, 3.32, 3.32*2), amt = 200, cmt = "GUTLUMEN", ii = 12, addl = 13, ss = 1, delta = 0.1, end = 12) %>%
+  plot(Cvenous~.,
+       main=list(label=expression(ITT~(h)), cex=0.75),
+       xlab=list(label="time (h)", cex=0.75),
+       ylab=list(label="Plasma concentration (mg/L)", cex=0.75),
+       scale=list(cex=0.5),
+       lty=1:3,
+       col="black",
+       #auto.key=list(cex=2, lines=T, points=F),
+       key=list(space="top",
+                lines=list(col=c("black","black","black"), lty=1:3),
+                text=list(c("1.66","3.32","6.64"), cex=0.5)
+       ))
+gp3
+
+###################################################################################################
+###################################################################################################
+
+###################################################################################################
+####################################### Chunk 7: Figure S3 #########################################
+###################################################################################################
+### sensitivity analyses for intestinal clearance ###
+p1 <- model5 %>%  
+  knobs(MPPGI=c(1.212/2, 1.212, 1.212*2), amt = 200, cmt = "GUTLUMEN", ii = 12, addl = 13, ss = 1, delta = 0.1, end = 12) %>% 
+  plot(Cvenous~., 
+       main=list(label=expression(Adult~Cl["Gu"]~(mL/min/kg)), cex=0.75), 
+       xlab=list(label="time (h)", cex=0.75),
+       ylab=list(label="Plasma concentration (mg/L)", cex=0.75), 
+       scale=list(cex=0.5), 
+       lty=1:3, 
+       col="black",
+       #auto.key=list(cex=2, lines=T, points=F),
+       key=list(space="top",
+                lines=list(col=c("black","black","black"), lty=1:3),
+                text=list(c("0.035","0.07","0.14"), cex=0.5)
+       ))
+p1
+
+p2 <- model6 %>%  
+  knobs(MPPGI=c(1.04/2, 1.04, 1.04*2), amt = 4*19, cmt = "GUTLUMEN", ii = 12, addl = 13, ss = 1, delta = 0.1, end = 12) %>% 
+  plot(Cvenous~., 
+       main=list(label=expression(Pediatric~Cl["Gu"]~(mL/min/kg)), cex=0.75), 
+       xlab=list(label="time (h)", cex=0.75),
+       ylab=list(label="Plasma concentration (mg/L)", cex=0.75), 
+       scale=list(cex=0.5), 
+       lty=1:3, 
+       col="black",
+       #auto.key=list(cex=2, lines=T, points=F),
+       key=list(space="top",
+                lines=list(col=c("black","black","black"), lty=1:3),
+                text=list(c("0.095","0.19","0.38"), cex=0.5)
+       ))
+p2
+
+###################################################################################################
+###################################################################################################
+
+
+###################################################################################################
+####################################### Chunk 8: Figure S5 #########################################
+###################################################################################################
+## This chunk reproduces Figure S5 plots
+## Figure S5a; Model 7 with 200 mg PO 
+load("../data/Fig3b_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
+wt <- 73
+dose <- 200
+cmt <- "GUTLUMEN"
+
+sim <- as.data.frame(model7 %>% 
+                       ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
+                       mrgsim(delta = 0.1, end = 12)) %>%
+  dplyr::filter(row_number() != 1)  #sets the mrgsolve dataframe
+
+sim_lower <- as.data.frame(model7 %>%
+                             param(MPPGI=0.61) %>%
+                             ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
+                             mrgsim(delta = 0.1, end = 12)) %>%
+  dplyr::filter(row_number() != 1)  #sets the mrgsolve dataframe
+
+sim_upper <- as.data.frame(model7 %>%
+                             param(MPPGI=2.18) %>%
+                             ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
+                             mrgsim(delta = 0.1, end = 12)) %>%
+  dplyr::filter(row_number() != 1)  #sets the mrgsolve dataframe
+
+gp1 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) + 
+  geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
+  geom_line(data = sim, mapping = aes(y=Cvenous, x=time, col="sim"), lwd=1) + 
+  geom_line(data = sim_upper, mapping = aes(y=Cvenous, x=time, col="sim_upper"), lwd=1, lty=2) +
+  geom_line(data = sim_lower, mapping = aes(y=Cvenous, x=time, col="sim_lower"), lwd=1, lty=2) +
+  scale_colour_manual(name='', values=c('sim'='black', 'observed'='black', 'sim_upper'='black', 'sim_lower'='black'), 
+                      breaks=c("observed","sim","sim_upper","sim_lower"),
+                      labels=c("observed","model 7","","")) +
+  guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
+  ggtitle("a   Adult 200 mg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
+  scale_y_continuous(breaks = seq(0,100,1)) +
+  #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
+  scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
+  theme_bw() + 
+  theme(axis.title=element_text(size=12)) +
+  theme(axis.text=element_text(size=10)) + 
+  theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
+  theme(plot.title=element_text(size=15, face="bold")) +
+  theme(legend.text=element_text(size=10))
+gp1
+
+
+#Figure S5b; Model 8 with 4 mg/kg PO 
+load("../data/Fig4d_obs.Rda")  #load observed data (digitized) from fig 4d in the ZT paper
+wt <- 19
+dose <- 4*wt
+cmt <- "GUTLUMEN"
+
+sim <- as.data.frame(model8 %>% 
+                       ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
+                       mrgsim(delta = 0.1, end = 12)) %>%
+  dplyr::filter(row_number() != 1)  #sets the mrgsolve dataframe
+
+sim_lower <- as.data.frame(model8 %>%
+                             param(MPPGI=0.52) %>%
+                             ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
+                             mrgsim(delta = 0.1, end = 12)) %>%
+  dplyr::filter(row_number() != 1)  #sets the mrgsolve dataframe
+
+sim_upper <- as.data.frame(model8 %>%
+                             param(MPPGI=1.89) %>%
+                             ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
+                             mrgsim(delta = 0.1, end = 12)) %>%
+  dplyr::filter(row_number() != 1)  #sets the mrgsolve dataframe
+
+gp2 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) + 
+  geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
+  geom_line(data = sim, mapping = aes(y=Cvenous, x=time, col="sim"), lwd=1) + 
+  geom_line(data = sim_upper, mapping = aes(y=Cvenous, x=time, col="sim_upper"), lwd=1, lty=2) +
+  geom_line(data = sim_lower, mapping = aes(y=Cvenous, x=time, col="sim_lower"), lwd=1, lty=2) +
+  scale_colour_manual(name='', values=c('sim'='black', 'observed'='black', 'sim_upper'='black','sim_lower'='black'), 
+                      breaks=c("observed","sim","sim_upper","sim_lower"),
+                      labels=c("observed","model 8","","")) +
+  guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
+  ggtitle("b  Pediatric 4 mg/kg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
+  scale_y_continuous(breaks = seq(0,100,1)) +
+  #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
+  scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
+  ylim(0,3) +
+  theme_bw() + 
+  theme(axis.title=element_text(size=12)) +
+  theme(axis.text=element_text(size=10)) + 
+  theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
+  theme(plot.title=element_text(size=15, face="bold")) +
+  theme(legend.text=element_text(size=10))
+gp2
+
 
 ###################################################################################################
 ###################################################################################################
