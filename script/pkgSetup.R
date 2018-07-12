@@ -2,7 +2,7 @@
 ## Before you proceed make the script directory your working directory with the function setwd()
 author <- c("--")
 
-pkgs <- c("dplyr", "mrgsolve", "sensitivity", "ggplot2", "magrittr")
+pkgs <- c("dplyr", "mrgsolve", "sensitivity", "ggplot2", "magrittr", "shiny")
 
 
 pkgRoot <- "pkg"
