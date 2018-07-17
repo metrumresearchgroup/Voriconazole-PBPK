@@ -1,6 +1,7 @@
 .libPaths("lib")
 library(Rcpp)
 library(dplyr)
+library(ggplot2)
 library(mrgsolve)
 library(shiny)
 library(gridExtra)
