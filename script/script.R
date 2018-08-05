@@ -8,8 +8,10 @@
 library(dplyr)
 library(ggplot2)
 library(magrittr)
+library(PKPDmisc)
+library(gridExtra)
+library(kableExtra)
 library(mrgsolve)  #https://github.com/metrumresearchgroup/mrgsolve
-source("calcKp_PT.R")
 
 #compile models
 model1 <- mread_cache("model1", "../model")  # model1 (Adult physiology)
@@ -17,29 +19,156 @@ model2 <- mread_cache("model2", "../model")  # model2 (Pediatric physiology)
 
 
 ###################################################################################################
-######################## Chunk 1: Calculate partition coefficients ################################
+######################################### Chunk 1: Figure 3 #######################################
 ###################################################################################################
-## This chunk calculates tissue:plasma partition coefficients used in models 1&2 using Poulin & Theil
-## method https://jpharmsci.org/article/S0022-3549(16)30889-9/fulltext
-# First define Voriconazole physicochemical properties
-logP <- 2.56  #oil:water partition
+## This chunk plots figure 1 that compares model predictions using different calculation methods
+# Source the different calculation methods
+source("CalcKp_P&T.R")
+source("CalcKp_R&R.R")
+source("CalcKp_Berez.R")
+source("CalcKp_Schmitt.R")
+source("CalcKp_pksim.R")
+
+# load observed data
+load("../data/Fig3a_obs.Rda")  #load observed data (digitized) from fig 3a in the ZT paper
+load("../data/Fig3a_ZT.Rda")  #load ZT redicitons (digitized) from fig 3a in the ZT paper
+
+## drug-related parameters
+type <- 3
+logP <- 2.56
 pKa <- 1.76
-fup <-.42  #fraction unbound in plasma
+fup <- .42
+BP <- 1
 
-# calculate partition coefficients
-Kp <- calcKp(logP=logP, pKa=pKa, fup=fup, type=3)  #type=3 for monoprotic base
-Kp
+BW <- 73
+
+## calculate the different Kps
+dat <- read.csv("../data/tissue_comp_P&T.csv")
+Kp_PT <- calcKp_PT(logP=logP, pKa=pKa, fup=fup, BP=BP, type=type)
+dat <- read.csv("../data/PKSim_tissue_comp_PT_Berez.csv")
+Kp_Berez <- calcKp_Berez(logP=logP, pKa=pKa, fup=fup, BP=BP, type=type)
+dat <- read.csv("../data/tissue_comp_R&R.csv")
+Kp_RR <- calcKp_RR(logP=logP, pKa=pKa, fup=fup, BP=BP, type=type)
+#dat <- read.csv("../data/tissue_comp_Schmitt.csv")
+dat <- read.csv("../data/PKSim_tissue_comp_Schmitt.csv")
+Kp_Schmitt <- calcKp_Schmitt(logP=logP, pKa=pKa, fup=fup, type=type)
+dat <- read.csv("../data/PKSim_tissue_comp_pksim.csv")
+Kp_pksim <- calcKp_pksim(logP=logP, fup=fup)
+
+## get all predictions
+pred_PT <- model1 %>% 
+  param(Kp_PT) %>% 
+  ev(cmt = "VEN", amt = 4*BW, ii = 12, addl =  13, rate = 4*BW, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+pred_Berez <- model1 %>% 
+  param(Kp_Berez) %>% 
+  ev(cmt = "VEN", amt = 4*BW, ii = 12, addl =  13, rate = 4*BW, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+pred_RR <- model1 %>% 
+  param(Kp_RR) %>% 
+  ev(cmt = "VEN", amt = 4*BW, ii = 12, addl =  13, rate = 4*BW, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+pred_Schmitt <- model1 %>% 
+  param(Kp_Schmitt) %>% 
+  ev(cmt = "VEN", amt = 4*BW, ii = 12, addl =  13, rate = 4*BW, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+pred_pksim <- model1 %>% 
+  param(Kp_pksim) %>% 
+  ev(cmt = "VEN", amt = 4*BW, ii = 12, addl =  13, rate = 4*BW, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+## plot
+gp <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) + 
+  geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
+  geom_line(data = ZT, mapping = aes(x=time, y=ZT, col="ZT"), lwd=1) +
+  geom_line(data = pred_PT, mapping = aes(y=Cvenous, x=time, col="pred_PT"), lwd=1) + 
+  geom_line(data = pred_Berez, mapping = aes(y=Cvenous, x=time, col="pred_Berez"), lwd=1, lty=2) +
+  geom_line(data = pred_RR, mapping = aes(y=Cvenous, x=time, col="pred_RR"), lwd=1, lty=3) +
+  geom_line(data = pred_Schmitt, mapping = aes(y=Cvenous, x=time, col="pred_Schmitt"), lwd=1, lty=4) +
+  geom_line(data = pred_pksim, mapping = aes(y=Cvenous, x=time, col="pred_pksim"), lwd=1, lty=6) +
+  scale_colour_manual(name='', values=c('ZT'='grey', 
+                                        'pred_PT'='black', 
+                                        'observed'='black',
+                                        'pred_RR'='black',
+                                        'pred_pksim'='black',
+                                        'pred_Schmitt'='black',
+                                        'pred_Berez'='black'), 
+                      breaks=c("observed","ZT","pred_PT","pred_Berez","pred_RR","pred_Schmitt","pred_pksim"), 
+                      labels=c("observed","ZT","PT","Berez","RR","Schmitt","PKSim")) +
+  guides(colour = guide_legend(override.aes = list(linetype=c(0,1,1,2,3,4,6), shape=c(16, NA, NA, NA, NA, NA, NA)))) +
+  ggtitle("Adult 4 mg/kg IV") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
+  scale_y_continuous(breaks = seq(0,100,2)) +
+  #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
+  scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
+  theme_bw() + theme(axis.title=element_text(size=18)) +
+  theme(axis.text=element_text(size=15)) +
+  theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
+  theme(plot.title=element_text(size=20, face="bold")) +
+  theme(legend.text=element_text(size=18))
+
+# plot and save
+g <- grid.arrange(gp, ncol=1, nrow=2)
+ggsave(file="../deliv/fig3.pdf", g, width=6, height=8)
+
 ###################################################################################################
 ###################################################################################################
 
+###################################################################################################
+####################################### Chunk 2: Table 1 #########################################
+###################################################################################################
+## This chink tables out the prediction erros of different calculation methods
+auc_obs <- auc_partial(obs$time, obs$obs, range=c(0,10))
+auc_PT <- auc_partial(pred_PT$time, pred_PT$Cvenous, range=c(0,10))
+auc_Berez <- auc_partial(pred_Berez$time, pred_Berez$Cvenous, range=c(0,10))
+auc_RR <- auc_partial(pred_RR$time, pred_RR$Cvenous, range=c(0,10))
+auc_Schmitt <- auc_partial(pred_Schmitt$time, pred_Schmitt$Cvenous, range=c(0,10))
+auc_pksim <- auc_partial(pred_pksim$time, pred_pksim$Cvenous, range=c(0,10))
+
+cmax_obs <- max(obs$obs)
+cmax_PT <- max(pred_PT$Cvenous)
+cmax_Berez <- max(pred_Berez$Cvenous)
+cmax_RR <- max(pred_RR$Cvenous)
+cmax_Schmitt <- max(pred_Schmitt$Cvenous)
+cmax_pksim <- max(pred_pksim$Cvenous)
+
+table1 <- data.frame(Method=c("Observed","PT","Berez","RR","Schmitt","PKSim"),
+                     AUC=c(auc_obs, auc_PT, auc_Berez, auc_RR, auc_Schmitt, auc_pksim),
+                     Cmax=c(cmax_obs, cmax_PT, cmax_Berez, cmax_RR, cmax_Schmitt, cmax_pksim))
+table1 <- table1 %>%
+  dplyr::mutate("AUC_error(%)"=ifelse(Method=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
+                "Cmax_error(%)"=ifelse(Method=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
+  dplyr::mutate("Total_error(%)"=`AUC_error(%)` + `Cmax_error(%)`)
+
+table1 %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+###################################################################################################
+###################################################################################################
 
 ###################################################################################################
-####################################### Chunk 2: Figure 3 #########################################
+####################################### Chunk 3: Figure 4 #########################################
 ###################################################################################################
 ## This chunk reproduces Figure 3 plots; all observed and ZT data were digitized and saved as .Rda 
 ## files whose numbers follow the ZT publication numbering
+## Update models 1 and 2 with the RR Kps
+model1 <- param(model1, Kp_RR)
+model2 <- param(model2, Kp_RR)
 
-## Figure 3a; Model 1 with 4 mg/kg IV infusion ##
+## Figure 4a; Model 1 with 4 mg/kg IV infusion ##
 load("../data/Fig3a_obs.Rda")  #load observed data (digitized) from fig 3a in the ZT paper
 load("../data/Fig3a_ZT.Rda")  #load ZT redicitons (digitized) from fig 3a in the ZT paper
 wt <- 73  #adult body weight
@@ -176,6 +305,10 @@ gp4 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="obser
   theme(plot.title=element_text(size=15, face="bold")) +
   theme(legend.text=element_text(size=10))
 gp4
+
+#plot and save
+gp <- grid.arrange(gp1, gp2, gp3, gp4, ncol=2, nrow=3)
+ggsave(file="../deliv/fig4.pdf", gp, width=10, height=12)
 
 ###################################################################################################
 ###################################################################################################

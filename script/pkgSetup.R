@@ -1,8 +1,8 @@
 ## This script installs all required packages and creates a "lib" directory
 ## Before you proceed make the script directory your working directory with the function setwd()
-author <- c("--")
+author <- c("ahmede")
 
-pkgs <- c("dplyr", "mrgsolve", "sensitivity", "ggplot2", "magrittr", "shiny")
+pkgs <- c("dplyr", "mrgsolve", "sensitivity", "ggplot2", "magrittr", "shiny", "PKPDmisc", "kableExtra", "gridExtra")
 
 
 pkgRoot <- "pkg"
