@@ -331,48 +331,6 @@ ggsave(file="../deliv/fig4.pdf", g, width=10, height=12)
 ###################################################################################################
 
 ###################################################################################################
-####################################### Chunk 2: Table 2 #########################################
-###################################################################################################
-## This chunk tables out the prediction erros for IV and oral predcitions calculation methods
-## pad observed data till 12 hours
-df_temp <- obs %>%
-  dplyr::filter(time > 7)
-mod <- lm(obs~time, data=df_temp)
-obs2 <- data.frame(time=12, obs=as.numeric(as.character(predict.lm(mod, newdata=data.frame(time=12)))), sd=NA)
-obs <- bind_rows(obs, obs2)
-
-## calculate AUCs for all methods
-auc_obs <- auc_partial(obs$time, obs$obs, range=c(0,12))
-auc_PT <- auc_partial(pred_PT$time, pred_PT$Cvenous, range=c(0,12))
-auc_Berez <- auc_partial(pred_Berez$time, pred_Berez$Cvenous, range=c(0,12))
-auc_RR <- auc_partial(pred_RR$time, pred_RR$Cvenous, range=c(0,12))
-auc_Schmitt <- auc_partial(pred_Schmitt$time, pred_Schmitt$Cvenous, range=c(0,12))
-auc_pksim <- auc_partial(pred_pksim$time, pred_pksim$Cvenous, range=c(0,12))
-
-cmax_obs <- max(obs$obs)
-cmax_PT <- max(pred_PT$Cvenous)
-cmax_Berez <- max(pred_Berez$Cvenous)
-cmax_RR <- max(pred_RR$Cvenous)
-cmax_Schmitt <- max(pred_Schmitt$Cvenous)
-cmax_pksim <- max(pred_pksim$Cvenous)
-
-table1 <- data.frame(Method=c("Observed","PT","Berez","RR","Schmitt","PKSim"),
-                     AUC=c(auc_obs, auc_PT, auc_Berez, auc_RR, auc_Schmitt, auc_pksim),
-                     Cmax=c(cmax_obs, cmax_PT, cmax_Berez, cmax_RR, cmax_Schmitt, cmax_pksim))
-table1 <- table1 %>%
-  dplyr::mutate("RE_AUC(%)"=ifelse(Method=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
-                "RE_Cmax(%)"=ifelse(Method=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
-  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
-  dplyr::select(Method, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
-
-table1 %>%
-  kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover"))
-
-###################################################################################################
-###################################################################################################
-
-###################################################################################################
 ####################################### Chunk 4: Figure 5 #########################################
 ###################################################################################################
 ### sensitivity analyses for absorption parameters: permeability, intestinal transit time and solubility ###
@@ -477,8 +435,8 @@ fperm <- 0.849/ka  #0.849 is the reported absorption rate constant
 
 ## Generate models 3,4,5,6,7 and 8
 model3 <- param(model1, list(MPPGI=30.3/25))
-model4 <- param(model1, list(fperm=fperm))
-model5 <- param(model2, list(MPPGI=26/25))
+model4 <- param(model2, list(MPPGI=26/25))
+model5 <- param(model1, list(fperm=fperm))
 model6 <- param(model2, list(fperm=fperm))
 model7 <- param(model1, list(MPPGI=30.3/25, fperm=fperm))
 model8 <- param(model2, list(MPPGI=26/25, fperm=fperm))
@@ -500,7 +458,7 @@ sim_mppgi <- as.data.frame(model3 %>%
                             mrgsim(delta = 0.1, end = 12)) %>%
   dplyr::filter(row_number() != 1)  
 
-sim_fperm <- as.data.frame(model4 %>% 
+sim_fperm <- as.data.frame(model5 %>% 
                              ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
                              mrgsim(delta = 0.1, end = 12)) %>%
   dplyr::filter(row_number() != 1) 
@@ -524,7 +482,7 @@ gp1 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="obser
                                         'sim_fperm'='black',
                                         'sim_mppgi_fperm'='black'), 
                       breaks=c("observed","ZT","sim","sim_mppgi","sim_fperm","sim_mppgi_fperm"),
-                      labels=c("observed","ZT","model 1","model 3","model 4","model 7")) +
+                      labels=c("observed","ZT","model 1","model 3","model 5","model 7")) +
   guides(colour = guide_legend(override.aes = list(linetype=c(0,1,6,2,3,1), shape=c(16, NA,NA, NA,NA,NA)))) +
   ggtitle("a   Adult 200 mg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
   scale_y_continuous(breaks = seq(0,100,1)) +
@@ -555,7 +513,7 @@ sim <- as.data.frame(model2 %>%
                              mrgsim(delta = 0.1, end = 12)) %>%
   dplyr::filter(row_number() != 1) 
 
-sim_mppgi <- as.data.frame(model5 %>% 
+sim_mppgi <- as.data.frame(model4 %>% 
                              ev(amt=dose, cmt=cmt, ii=12, addl=7, ss=1) %>% 
                              mrgsim(delta = 0.1, end = 12)) %>%
   dplyr::filter(row_number() != 1)  
@@ -586,7 +544,7 @@ gp2 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="obser
                                         'sim_fperm'='black',
                                         'sim_mppgi_fperm'='black'), 
                       breaks=c("observed","ZT","ZT_Gu","sim","sim_mppgi","sim_fperm","sim_mppgi_fperm"),
-                      labels=c("observed","ZT",expression(ZT[Gu]),"model 2","model 5","model 6","model 8")) +
+                      labels=c("observed","ZT",expression(ZT[Gu]),"model 2","model 4","model 6","model 8")) +
   guides(colour = guide_legend(override.aes = list(linetype=c(0,1,2,6,2,3,1), shape=c(16, NA,NA,NA, NA,NA,NA)))) +
   ggtitle("b   Pediatric 4 mg/kg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
   scale_y_continuous(breaks = seq(0,100,1)) +
@@ -610,7 +568,235 @@ ggsave(file="../deliv/fig7.pdf", g, width=10, height=12)
 ###################################################################################################
 
 ###################################################################################################
-####################################### Chunk 6: Figure 8 #########################################
+####################################### Chunk 6: Table 2 #########################################
+###################################################################################################
+## This chunk tables out the prediction erros for IV predcitions
+
+## Adult
+## load data
+load("../data/Fig3a_obs.Rda")
+load("../data/Fig3a_ZT.Rda")
+
+## pad observed data till 12 hours
+df_temp <- obs %>%
+  dplyr::filter(time > 7)
+mod <- lm(obs~time, data=df_temp)
+obs2 <- data.frame(time=12, obs=as.numeric(as.character(predict.lm(mod, newdata=data.frame(time=12)))), sd=NA)
+obs <- bind_rows(obs, obs2)
+
+## make prediction
+BW <- 73
+dose <- 4*BW
+pred <- model1 %>% 
+  ev(cmt = "VEN", amt = dose, ii = 12, addl =  13, rate = dose, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+## calculate AUCs for observed, ZT and prediction
+auc_obs <- auc_partial(obs$time, obs$obs, range=c(0,12))
+auc_ZT <- auc_partial(ZT$time, ZT$ZT, range=c(0,12))
+auc_pred <- auc_partial(pred$time, pred$Cvenous, range=c(0,12))
+
+## get cmax for observed and prediction
+cmax_obs <- max(obs$obs)
+cmax_ZT <- max(ZT$ZT)
+cmax_pred <- max(pred$Cvenous)
+
+df_temp <- data.frame(Type=c("Observed","ZT","Model 1"),
+                      AUC=c(auc_obs, auc_ZT, auc_pred),
+                      Cmax=c(cmax_obs, cmax_ZT, cmax_pred))
+t1 <- df_temp %>%
+  dplyr::mutate("RE_AUC(%)"=ifelse(Type=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
+                "RE_Cmax(%)"=ifelse(Type=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
+  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
+  dplyr::select(Type, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
+
+
+## Pediatric
+## load data
+load("../data/Fig4a_obs.Rda")
+load("../data/Fig4a_ZT.Rda")
+
+## make prediction
+BW <- 19
+dose <- 4*BW
+pred <- model2 %>% 
+  ev(cmt = "VEN", amt = dose, ii = 12, addl =  13, rate = 3*BW, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+## calculate AUCs for observed, ZT and prediction
+auc_obs <- auc_partial(obs$time, obs$obs, range=c(0,12))
+auc_ZT <- auc_partial(ZT$time, ZT$ZT, range=c(0,12))
+auc_pred <- auc_partial(pred$time, pred$Cvenous, range=c(0,12))
+
+## get cmax for observed and prediction
+cmax_obs <- max(obs$obs)
+cmax_ZT <- max(ZT$ZT)
+cmax_pred <- max(pred$Cvenous)
+
+df_temp <- data.frame(Type=c("Observed","ZT","Model 2"),
+                      AUC=c(auc_obs, auc_ZT, auc_pred),
+                      Cmax=c(cmax_obs, cmax_ZT, cmax_pred))
+t2 <- df_temp %>%
+  dplyr::mutate("RE_AUC(%)"=ifelse(Type=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
+                "RE_Cmax(%)"=ifelse(Type=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
+  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
+  dplyr::select(Type, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
+
+table2 <- bind_rows(t1,t2)
+table2 %>%
+  kable() %>%
+  kable_styling() %>%
+  group_rows("Adult 4 mg/kg IV", 1, 3) %>%
+  group_rows("Pediatric 4 mg/kg IV", 4, 6)
+
+###################################################################################################
+###################################################################################################
+
+###################################################################################################
+####################################### Chunk 7: Table 3 #########################################
+###################################################################################################
+## This chunk tables out the prediction erros for IV predcitions
+
+## Adult
+## load data
+load("../data/Fig3b_obs.Rda")
+load("../data/Fig3b_ZT.Rda")
+
+## pad observed data till 12 hours
+df_temp <- obs %>%
+  dplyr::filter(time > 7)
+mod <- lm(obs~time, data=df_temp)
+obs2 <- data.frame(time=12, obs=as.numeric(as.character(predict.lm(mod, newdata=data.frame(time=12)))), sd=NA)
+obs <- bind_rows(obs, obs2)
+
+## make predictions
+BW <- 73
+dose <- 200
+cmt <- "GUTLUMEN"
+pred_init <- model1 %>% 
+  ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+pred_mppgi <- model3 %>% 
+  ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+pred_fperm <- model5 %>% 
+  ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+pred_mppgi_fperm <- model7 %>% 
+  ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+## calculate AUCs for observed, ZT and prediction
+auc_obs <- auc_partial(obs$time, obs$obs, range=c(0,12))
+auc_ZT <- auc_partial(ZT$time, ZT$ZT, range=c(0,12))
+auc_pred_init <- auc_partial(pred_init$time, pred_init$Cvenous, range=c(0,12))
+auc_pred_mppgi <- auc_partial(pred_mppgi$time, pred_mppgi$Cvenous, range=c(0,12))
+auc_pred_fperm <- auc_partial(pred_fperm$time, pred_fperm$Cvenous, range=c(0,12))
+auc_pred_mppgi_fperm <- auc_partial(pred_mppgi_fperm$time, pred_mppgi_fperm$Cvenous, range=c(0,12))
+
+## get cmax for observed and prediction
+cmax_obs <- max(obs$obs)
+cmax_ZT <- max(ZT$ZT)
+cmax_pred_init <- max(pred_init$Cvenous)
+cmax_pred_mppgi <- max(pred_mppgi$Cvenous)
+cmax_pred_fperm <- max(pred_fperm$Cvenous)
+cmax_pred_mppgi_fperm <- max(pred_mppgi_fperm$Cvenous)
+
+df_temp <- data.frame(Type=c("Observed","ZT","Model 1","Model 3","Model 5","Model 7"),
+                      AUC=c(auc_obs, auc_ZT, auc_pred_init, auc_pred_mppgi, auc_pred_fperm, auc_pred_mppgi_fperm),
+                      Cmax=c(cmax_obs, cmax_ZT, cmax_pred_init, cmax_pred_mppgi, cmax_pred_fperm, cmax_pred_mppgi_fperm))
+t1 <- df_temp %>%
+  dplyr::mutate("RE_AUC(%)"=ifelse(Type=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
+                "RE_Cmax(%)"=ifelse(Type=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
+  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
+  dplyr::select(Type, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
+
+
+## Pediatric
+## load data
+load("../data/Fig4d_obs.Rda")
+load("../data/Fig4e_ZT.Rda")
+
+## make prediction
+BW <- 19
+dose <- 4*BW
+cmt <- "GUTLUMEN"
+pred_init <- model2 %>% 
+  ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+pred_mppgi <- model4 %>% 
+  ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+pred_fperm <- model6 %>% 
+  ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+pred_mppgi_fperm <- model8 %>% 
+  ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss = 1) %>% 
+  mrgsim(delta = 0.1, end = 12) %>%
+  as.data.frame() %>%
+  dplyr::filter(row_number() > 1)
+
+## calculate AUCs for observed, ZT and prediction
+auc_obs <- auc_partial(obs$time, obs$obs, range=c(0,12))
+auc_ZT <- auc_partial(ZT$time, ZT$ZT, range=c(0,12))
+auc_pred_init <- auc_partial(pred_init$time, pred_init$Cvenous, range=c(0,12))
+auc_pred_mppgi <- auc_partial(pred_mppgi$time, pred_mppgi$Cvenous, range=c(0,12))
+auc_pred_fperm <- auc_partial(pred_fperm$time, pred_fperm$Cvenous, range=c(0,12))
+auc_pred_mppgi_fperm <- auc_partial(pred_mppgi_fperm$time, pred_mppgi_fperm$Cvenous, range=c(0,12))
+
+## get cmax for observed and prediction
+cmax_obs <- max(obs$obs)
+cmax_ZT <- max(ZT$ZT)
+cmax_pred_init <- max(pred_init$Cvenous)
+cmax_pred_mppgi <- max(pred_mppgi$Cvenous)
+cmax_pred_fperm <- max(pred_fperm$Cvenous)
+cmax_pred_mppgi_fperm <- max(pred_mppgi_fperm$Cvenous)
+
+df_temp <- data.frame(Type=c("Observed","ZT_Gu","Model 2","Model 4","Model 6","Model 8"),
+                      AUC=c(auc_obs, auc_ZT, auc_pred_init, auc_pred_mppgi, auc_pred_fperm, auc_pred_mppgi_fperm),
+                      Cmax=c(cmax_obs, cmax_ZT, cmax_pred_init, cmax_pred_mppgi, cmax_pred_fperm, cmax_pred_mppgi_fperm))
+t2 <- df_temp %>%
+  dplyr::mutate("RE_AUC(%)"=ifelse(Type=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
+                "RE_Cmax(%)"=ifelse(Type=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
+  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
+  dplyr::select(Type, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
+
+table3 <- bind_rows(t1,t2)
+table3 %>%
+  kable() %>%
+  kable_styling() %>%
+  group_rows("Adult 200 mg PO", 1, 6) %>%
+  group_rows("Pediatric 4 mg/kg PO", 7, 12)
+
+###################################################################################################
+###################################################################################################
+
+###################################################################################################
+####################################### Chunk 8: Figure 8 #########################################
 ###################################################################################################
 ## This chunk reproduces Figure S5 plots with the simulations from IIV and uncertainty of CL_Gu and Peff
 ## Figure S5a
@@ -742,138 +928,4 @@ ggsave(file="../deliv/fig8.pdf", g, width=10, height=12)
 ###################################################################################################
 ###################################################################################################
 
-###################################################################################################
-####################################### Chunk 2: Table 1 #########################################
-###################################################################################################
-## This chunk tables out the prediction erros of different calculation methods
 
-## Adult
-## load data
-load("../data/Fig3a_obs.Rda")
-
-## pad observed data till 12 hours
-df_temp <- obs %>%
-  dplyr::filter(time > 7)
-mod <- lm(obs~time, data=df_temp)
-obs2 <- data.frame(time=12, obs=as.numeric(as.character(predict.lm(mod, newdata=data.frame(time=12)))), sd=NA)
-obs <- bind_rows(obs, obs2)
-
-## calculate AUCs for all
-auc_obs <- auc_partial(obs$time, obs$obs, range=c(0,12))
-auc_PT <- auc_partial(pred_PT$time, pred_PT$Cvenous, range=c(0,12))
-auc_Berez <- auc_partial(pred_Berez$time, pred_Berez$Cvenous, range=c(0,12))
-auc_RR <- auc_partial(pred_RR$time, pred_RR$Cvenous, range=c(0,12))
-auc_Schmitt <- auc_partial(pred_Schmitt$time, pred_Schmitt$Cvenous, range=c(0,12))
-auc_pksim <- auc_partial(pred_pksim$time, pred_pksim$Cvenous, range=c(0,12))
-
-cmax_obs <- max(obs$obs)
-cmax_PT <- max(pred_PT$Cvenous)
-cmax_Berez <- max(pred_Berez$Cvenous)
-cmax_RR <- max(pred_RR$Cvenous)
-cmax_Schmitt <- max(pred_Schmitt$Cvenous)
-cmax_pksim <- max(pred_pksim$Cvenous)
-
-table1 <- data.frame(Method=c("Observed","PT","Berez","RR","Schmitt","PKSim"),
-                     AUC=c(auc_obs, auc_PT, auc_Berez, auc_RR, auc_Schmitt, auc_pksim),
-                     Cmax=c(cmax_obs, cmax_PT, cmax_Berez, cmax_RR, cmax_Schmitt, cmax_pksim))
-table1 <- table1 %>%
-  dplyr::mutate("RE_AUC(%)"=ifelse(Method=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
-                "RE_Cmax(%)"=ifelse(Method=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
-  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
-  dplyr::select(Method, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
-
-table1 %>%
-  kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover"))
-
-###################################################################################################
-###################################################################################################
-
-###################################################################################################
-####################################### Chunk 2: Table 2 #########################################
-###################################################################################################
-## This chunk tables out the prediction erros for IV and oral predcitions calculation methods
-
-## Adult
-## load data
-load("../data/Fig3a_obs.Rda")
-load("../data/Fig3a_ZT.Rda")
-
-## pad observed data till 12 hours
-df_temp <- obs %>%
-  dplyr::filter(time > 7)
-mod <- lm(obs~time, data=df_temp)
-obs2 <- data.frame(time=12, obs=as.numeric(as.character(predict.lm(mod, newdata=data.frame(time=12)))), sd=NA)
-obs <- bind_rows(obs, obs2)
-
-## make prediction
-BW <- 73
-dose <- 4*BW
-pred <- model1 %>% 
-  ev(cmt = "VEN", amt = dose, ii = 12, addl =  13, rate = dose, ss = 1) %>% 
-  mrgsim(delta = 0.1, end = 12) %>%
-  as.data.frame() %>%
-  dplyr::filter(row_number() > 1)
-  
-## calculate AUCs for observed, ZT and prediction
-auc_obs <- auc_partial(obs$time, obs$obs, range=c(0,12))
-auc_ZT <- auc_partial(ZT$time, ZT$ZT, range=c(0,12))
-auc_pred <- auc_partial(pred$time, pred$Cvenous, range=c(0,12))
-
-## get cmax for observed and prediction
-cmax_obs <- max(obs$obs)
-cmax_ZT <- max(ZT$ZT)
-cmax_pred <- max(pred$Cvenous)
-
-df_temp <- data.frame(Type=c("Observed","ZT","Model 1"),
-                     AUC=c(auc_obs, auc_ZT, auc_pred),
-                     Cmax=c(cmax_obs, cmax_ZT, cmax_pred))
-t1 <- df_temp %>%
-  dplyr::mutate("RE_AUC(%)"=ifelse(Type=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
-                "RE_Cmax(%)"=ifelse(Type=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
-  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
-  dplyr::select(Type, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
-
-
-## Pediatric
-## load data
-load("../data/Fig4a_obs.Rda")
-load("../data/Fig4a_ZT.Rda")
-
-## make prediction
-BW <- 19
-dose <- 4*BW
-pred <- model2 %>% 
-  ev(cmt = "VEN", amt = dose, ii = 12, addl =  13, rate = 3*BW, ss = 1) %>% 
-  mrgsim(delta = 0.1, end = 12) %>%
-  as.data.frame() %>%
-  dplyr::filter(row_number() > 1)
-
-## calculate AUCs for observed, ZT and prediction
-auc_obs <- auc_partial(obs$time, obs$obs, range=c(0,12))
-auc_ZT <- auc_partial(ZT$time, ZT$ZT, range=c(0,12))
-auc_pred <- auc_partial(pred$time, pred$Cvenous, range=c(0,12))
-
-## get cmax for observed and prediction
-cmax_obs <- max(obs$obs)
-cmax_ZT <- max(ZT$ZT)
-cmax_pred <- max(pred$Cvenous)
-
-df_temp <- data.frame(Type=c("Observed","ZT","Model 2"),
-                 AUC=c(auc_obs, auc_ZT, auc_pred),
-                 Cmax=c(cmax_obs, cmax_ZT, cmax_pred))
-t2 <- df_temp %>%
-  dplyr::mutate("RE_AUC(%)"=ifelse(Type=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
-                "RE_Cmax(%)"=ifelse(Type=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
-  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
-  dplyr::select(Type, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
-
-table2 <- bind_rows(t1,t2)
-table2 %>%
-  kable() %>%
-  kable_styling() %>%
-  group_rows("Adult 4 mg/kg IV", 1, 3) %>%
-  group_rows("Pediatric 4 mg/kg IV", 4, 6)
-
-###################################################################################################
-###################################################################################################
