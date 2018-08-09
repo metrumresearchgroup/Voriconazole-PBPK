@@ -14,6 +14,7 @@ library(gridExtra)
 library(magick)
 library(kableExtra)
 library(mrgsolve)  #https://github.com/metrumresearchgroup/mrgsolve
+source("funs.R")
 
 #compile models
 model1 <- mread_cache("model1", "../model")  # model1 (Adult physiology)
@@ -928,4 +929,52 @@ ggsave(file="../deliv/fig8.pdf", g, width=10, height=12)
 ###################################################################################################
 ###################################################################################################
 
+###################################################################################################
+####################################### Chunk 9: Figure 9 #########################################
+###################################################################################################
+## This chunk reproduces Figure 9 which compares exposures of adult standard oral dose vs several
+## pediatric doses
+## Figure 9
+pred_adult <- run_sim(model7, cmt="GUTLUMEN", dose=200)
+pred_ped_4 <- run_sim(model8, cmt="GUTLUMEN", dose=4*19)
+pred_ped_5 <- run_sim(model8, cmt="GUTLUMEN", dose=5*19)
+pred_ped_6 <- run_sim(model8, cmt="GUTLUMEN", dose=6*19)
+pred_ped_7 <- run_sim(model8, cmt="GUTLUMEN", dose=7*19)
+pred_ped_8 <- run_sim(model8, cmt="GUTLUMEN", dose=8*19)
+  
+## calculate AUCs for observed, ZT and prediction
+auc_pred_adult <- auc_partial(pred_adult$time, pred_adult$Cvenous, range=c(0,12))
+auc_pred_ped_4 <- auc_partial(pred_ped_4$time, pred_ped_4$Cvenous, range=c(0,12))
+auc_pred_ped_5 <- auc_partial(pred_ped_5$time, pred_ped_5$Cvenous, range=c(0,12))
+auc_pred_ped_6 <- auc_partial(pred_ped_6$time, pred_ped_6$Cvenous, range=c(0,12))
+auc_pred_ped_7 <- auc_partial(pred_ped_7$time, pred_ped_7$Cvenous, range=c(0,12))
+auc_pred_ped_8 <- auc_partial(pred_ped_8$time, pred_ped_8$Cvenous, range=c(0,12))
 
+## setup dataframe
+df_temp <- data.frame(Dose = c("Adult 200 mg", 
+                               "Pediatric 4 mg/kg", 
+                               "Pediatric 5 mg/kg", 
+                               "Pediatric 6 mg/kg", 
+                               "Pediatric 7 mg/kg",
+                               "Pediatric 8 mg/kg"),
+                      AUC = c(auc_pred_adult,
+                              auc_pred_ped_4,
+                              auc_pred_ped_5,
+                              auc_pred_ped_6,
+                              auc_pred_ped_7,
+                              auc_pred_ped_8))
+
+#plot and save
+gp <- ggplot(data=df_temp, aes(Dose, AUC)) +
+  geom_bar(stat="identity") +
+  labs(x="", y="AUC (mg.h/L)") +
+  geom_hline(yintercept=auc_pred_adult, lty=2) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+gp
+
+g <- grid.arrange(gp, ncol=1, nrow=2)
+ggsave(file="../deliv/fig9.pdf", g, width=6, height=8)
+
+###################################################################################################
+###################################################################################################
