@@ -161,14 +161,19 @@ table1 <- data.frame(Method=c("Observed","PT","Berez","RR","Schmitt","PKSim"),
                      AUC=c(auc_obs, auc_PT, auc_Berez, auc_RR, auc_Schmitt, auc_pksim),
                      Cmax=c(cmax_obs, cmax_PT, cmax_Berez, cmax_RR, cmax_Schmitt, cmax_pksim))
 table1 <- table1 %>%
-  dplyr::mutate("RE_AUC(%)"=ifelse(Method=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
-                "RE_Cmax(%)"=ifelse(Method=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
-  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
-  dplyr::select(Method, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
+  dplyr::mutate("RE_AUC (%)"=ifelse(Method=="Observed", NA, abs((first(AUC)-AUC)/first(AUC)*100)),
+                "RE_Cmax (%)"=ifelse(Method=="Observed", NA, abs((first(Cmax)-Cmax)/first(Cmax)*100))) %>%
+  dplyr::mutate("RE_total (%)"=`RE_AUC (%)` + `RE_Cmax (%)`) %>%
+  dplyr::select(Method, AUC, `RE_AUC (%)`, Cmax, `RE_Cmax (%)`, `RE_total (%)`)
+table1[,-1] <- round(table1[,-1], 2)
 
+## view table
 table1 %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
+
+## save as .csv
+write.csv(table1, file="../deliv/table1.csv", row.names=F, quote=F)
 
 ###################################################################################################
 ###################################################################################################
@@ -315,7 +320,6 @@ gp4 <- ggplot() + geom_point(data = obs, mapping = aes(x=time, y=obs, col="obser
   #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
   ylim(-0.5,3.5) +
   scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
-  ylim(-0.5,3) +
   theme_bw() + 
   theme(axis.title=element_text(size=12)) +
   theme(axis.text=element_text(size=10)) + 
@@ -608,11 +612,10 @@ df_temp <- data.frame(Type=c("Observed","ZT","Model 1"),
                       AUC=c(auc_obs, auc_ZT, auc_pred),
                       Cmax=c(cmax_obs, cmax_ZT, cmax_pred))
 t1 <- df_temp %>%
-  dplyr::mutate("RE_AUC(%)"=ifelse(Type=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
-                "RE_Cmax(%)"=ifelse(Type=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
-  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
-  dplyr::select(Type, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
-
+  dplyr::mutate("RE_AUC (%)"=ifelse(Type=="Observed", NA, abs((first(AUC)-AUC)/first(AUC)*100)),
+                "RE_Cmax (%)"=ifelse(Type=="Observed", NA, abs((first(Cmax)-Cmax)/first(Cmax)*100))) %>%
+  dplyr::mutate("RE_total (%)"=`RE_AUC (%)` + `RE_Cmax (%)`) %>%
+  dplyr::select(Type, AUC, `RE_AUC (%)`, Cmax, `RE_Cmax (%)`, `RE_total (%)`)
 
 ## Pediatric
 ## load data
@@ -642,17 +645,23 @@ df_temp <- data.frame(Type=c("Observed","ZT","Model 2"),
                       AUC=c(auc_obs, auc_ZT, auc_pred),
                       Cmax=c(cmax_obs, cmax_ZT, cmax_pred))
 t2 <- df_temp %>%
-  dplyr::mutate("RE_AUC(%)"=ifelse(Type=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
-                "RE_Cmax(%)"=ifelse(Type=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
-  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
-  dplyr::select(Type, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
+  dplyr::mutate("RE_AUC (%)"=ifelse(Type=="Observed", NA, abs((first(AUC)-AUC)/first(AUC)*100)),
+                "RE_Cmax (%)"=ifelse(Type=="Observed", NA, abs((first(Cmax)-Cmax)/first(Cmax)*100))) %>%
+  dplyr::mutate("RE_total (%)"=`RE_AUC (%)` + `RE_Cmax (%)`) %>%
+  dplyr::select(Type, AUC, `RE_AUC (%)`, Cmax, `RE_Cmax (%)`, `RE_total (%)`)
 
 table2 <- bind_rows(t1,t2)
+table2[,-1] <- round(table2[,-1], 2)
+
+## view
 table2 %>%
   kable() %>%
   kable_styling() %>%
   group_rows("Adult 4 mg/kg IV", 1, 3) %>%
   group_rows("Pediatric 4 mg/kg IV", 4, 6)
+
+## save as .csv
+write.csv(table2, file="../deliv/table2.csv", row.names=F, quote=F)
 
 ###################################################################################################
 ###################################################################################################
@@ -722,10 +731,10 @@ df_temp <- data.frame(Type=c("Observed","ZT","Model 1","Model 3","Model 5","Mode
                       AUC=c(auc_obs, auc_ZT, auc_pred_init, auc_pred_mppgi, auc_pred_fperm, auc_pred_mppgi_fperm),
                       Cmax=c(cmax_obs, cmax_ZT, cmax_pred_init, cmax_pred_mppgi, cmax_pred_fperm, cmax_pred_mppgi_fperm))
 t1 <- df_temp %>%
-  dplyr::mutate("RE_AUC(%)"=ifelse(Type=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
-                "RE_Cmax(%)"=ifelse(Type=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
-  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
-  dplyr::select(Type, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
+  dplyr::mutate("RE_AUC (%)"=ifelse(Type=="Observed", NA, abs((first(AUC)-AUC)/first(AUC)*100)),
+                "RE_Cmax (%)"=ifelse(Type=="Observed", NA, abs((first(Cmax)-Cmax)/first(Cmax)*100))) %>%
+  dplyr::mutate("RE_total (%)"=`RE_AUC (%)` + `RE_Cmax (%)`) %>%
+  dplyr::select(Type, AUC, `RE_AUC (%)`, Cmax, `RE_Cmax (%)`, `RE_total (%)`)
 
 
 ## Pediatric
@@ -781,17 +790,23 @@ df_temp <- data.frame(Type=c("Observed","ZT_Gu","Model 2","Model 4","Model 6","M
                       AUC=c(auc_obs, auc_ZT, auc_pred_init, auc_pred_mppgi, auc_pred_fperm, auc_pred_mppgi_fperm),
                       Cmax=c(cmax_obs, cmax_ZT, cmax_pred_init, cmax_pred_mppgi, cmax_pred_fperm, cmax_pred_mppgi_fperm))
 t2 <- df_temp %>%
-  dplyr::mutate("RE_AUC(%)"=ifelse(Type=="Observed", NA, round(abs((first(AUC)-AUC)/first(AUC)*100), digits=2)),
-                "RE_Cmax(%)"=ifelse(Type=="Observed", NA, round(abs((first(Cmax)-Cmax)/first(Cmax)*100), digits=2))) %>%
-  dplyr::mutate("RE_total(%)"=`RE_AUC(%)` + `RE_Cmax(%)`) %>%
-  dplyr::select(Type, AUC, `RE_AUC(%)`, Cmax, `RE_Cmax(%)`, `RE_total(%)`)
+  dplyr::mutate("RE_AUC (%)"=ifelse(Type=="Observed", NA, abs((first(AUC)-AUC)/first(AUC)*100)),
+                "RE_Cmax (%)"=ifelse(Type=="Observed", NA, abs((first(Cmax)-Cmax)/first(Cmax)*100))) %>%
+  dplyr::mutate("RE_total (%)"=`RE_AUC (%)` + `RE_Cmax (%)`) %>%
+  dplyr::select(Type, AUC, `RE_AUC (%)`, Cmax, `RE_Cmax (%)`, `RE_total (%)`)
 
 table3 <- bind_rows(t1,t2)
+table3[,-1] <- round(table3[,-1], 2)
+
+## view
 table3 %>%
   kable() %>%
   kable_styling() %>%
   group_rows("Adult 200 mg PO", 1, 6) %>%
   group_rows("Pediatric 4 mg/kg PO", 7, 12)
+
+## save as .csv
+write.csv(table3, file="../deliv/table3.csv", row.names=F, quote=F)
 
 ###################################################################################################
 ###################################################################################################
@@ -799,132 +814,132 @@ table3 %>%
 ###################################################################################################
 ####################################### Chunk 8: Figure 8 #########################################
 ###################################################################################################
-## This chunk reproduces Figure S5 plots with the simulations from IIV and uncertainty of CL_Gu and Peff
-## Figure S5a
-
-## Adults
-load("../data/Fig3b_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
-
-## sample Cl_Gu and Peff by sampling from MPPGI and fperm
-set.seed(23142)
-nSampl <- 1000
-mppgiSampl <- exp(rnorm(nSampl, mean=log(30.3/25), sd=0.33))  #lognormal; CV = 33%   
-fpermSampl <- exp(rnorm(nSampl, mean=log(fperm), sd=0.4))  #lognormal; CV = 40%
-lpars <- purrr::map2(mppgiSampl, fpermSampl, .f=function(x,y){list(x,y)})  #make a list of parameter samples
-lpars <- lapply(lpars, function(x) setNames(x, c("MPPGI","fperm")))  #set parameter names
-
-#simulate
-wt <- 73
-dose <- 200
-cmt <- "GUTLUMEN"
-
-sim <- function(pars, mod){
-  mod %>%
-    param(pars) %>%
-    ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss=1) %>% 
-    mrgsim(end = 12, delta = 0.1) %>%
-    dplyr::filter(row_number() > 1) %>%
-    dplyr::select(time, Cvenous)
-}
-
-sims <- lapply(lpars, sim, mod=model1) %>% 
-  bind_rows %>%
-  group_by(time) %>%
-  dplyr::mutate(avg = mean(Cvenous),
-                low = quantile(Cvenous, probs=0.025), 
-                high=quantile(Cvenous, probs=0.975))
-
-
-# plot
-gp1 <- ggplot() + 
-  geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) + 
-  geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
-  geom_line(data = sims, mapping = aes(y=avg, x=time, col="avg"), lwd=1) + 
-  geom_line(data = sims, mapping = aes(y=low, x=time, col="low"), lwd=1, lty=2) +
-  geom_line(data = sims, mapping = aes(y=high, x=time, col="high"), lwd=1, lty=2) +
-  scale_colour_manual(name='', values=c('observed'='black', 
-                                        'avg'='black', 
-                                        'low'='black', 
-                                        'high'='black'), 
-                      breaks=c("observed","avg","low","high"),
-                      labels=c("observed","mean","","")) +
-  guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
-  ggtitle("a   Adult 200 mg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
-  scale_y_continuous(breaks = seq(0,100,1)) +
-  #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
-  ylim(-0.5,3.5) +
-  scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
-  theme_bw() + 
-  theme(axis.title=element_text(size=12)) +
-  theme(axis.text=element_text(size=10)) + 
-  theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
-  theme(plot.title=element_text(size=15, face="bold")) +
-  theme(legend.text=element_text(size=10))
-gp1
-
-
-## Pediatrics
-load("../data/Fig4d_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
-
-## sample Cl_Gu and Peff by sampling from MPPGI and fperm
-set.seed(23142)
-nSampl <- 1000
-mppgiSampl <- exp(rnorm(nSampl, mean=log(26/25), sd=0.33))  #lognormal; CV = 33%   
-fpermSampl <- exp(rnorm(nSampl, mean=log(fperm), sd=0.4))  #lognormal; CV = 40%
-lpars <- purrr::map2(mppgiSampl, fpermSampl, .f=function(x,y){list(x,y)})  #make a list of parameter samples
-lpars <- lapply(lpars, function(x) setNames(x, c("MPPGI","fperm")))  #set parameter names
-
-#simulate
-wt <- 19
-dose <- 4*wt
-cmt <- "GUTLUMEN"
-
-sim <- function(pars, mod){
-  mod %>%
-    param(pars) %>%
-    ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss=1) %>% 
-    mrgsim(end = 12, delta = 0.1) %>%
-    dplyr::filter(row_number() > 1) %>%
-    dplyr::select(time, Cvenous)
-}
-
-sims <- lapply(lpars, sim, mod=model2) %>% 
-  bind_rows %>%
-  group_by(time) %>%
-  dplyr::mutate(avg = mean(Cvenous),
-                low = quantile(Cvenous, probs=0.025), 
-                high=quantile(Cvenous, probs=0.975))
-
-
-gp2 <- ggplot() + 
-  geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) + 
-  geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
-  geom_line(data = sims, mapping = aes(y=avg, x=time, col="avg"), lwd=1) + 
-  geom_line(data = sims, mapping = aes(y=low, x=time, col="low"), lwd=1, lty=2) +
-  geom_line(data = sims, mapping = aes(y=high, x=time, col="high"), lwd=1, lty=2) +
-  scale_colour_manual(name='', values=c('observed'='black', 
-                                        'avg'='black', 
-                                        'low'='black', 
-                                        'high'='black'), 
-                      breaks=c("observed","avg","low","high"),
-                      labels=c("observed","mean","","")) +
-  guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
-  ggtitle("b   Pediatric 4 mg/kg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
-  scale_y_continuous(breaks = seq(0,100,1)) +
-  #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
-  ylim(-0.5,3.5) +
-  scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
-  theme_bw() + 
-  theme(axis.title=element_text(size=12)) +
-  theme(axis.text=element_text(size=10)) + 
-  theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
-  theme(plot.title=element_text(size=15, face="bold")) +
-  theme(legend.text=element_text(size=10))
-gp2
-
-#plot and save
-g <- grid.arrange(gp1, gp2, ncol=2, nrow=3)
-ggsave(file="../deliv/fig8.pdf", g, width=10, height=12)
+# ## This chunk reproduces Figure S5 plots with the simulations from IIV and uncertainty of CL_Gu and Peff
+# ## Figure S5a
+# 
+# ## Adults
+# load("../data/Fig3b_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
+# 
+# ## sample Cl_Gu and Peff by sampling from MPPGI and fperm
+# set.seed(23142)
+# nSampl <- 1000
+# mppgiSampl <- exp(rnorm(nSampl, mean=log(30.3/25), sd=0.33))  #lognormal; CV = 33%   
+# fpermSampl <- exp(rnorm(nSampl, mean=log(fperm), sd=0.4))  #lognormal; CV = 40%
+# lpars <- purrr::map2(mppgiSampl, fpermSampl, .f=function(x,y){list(x,y)})  #make a list of parameter samples
+# lpars <- lapply(lpars, function(x) setNames(x, c("MPPGI","fperm")))  #set parameter names
+# 
+# #simulate
+# wt <- 73
+# dose <- 200
+# cmt <- "GUTLUMEN"
+# 
+# sim <- function(pars, mod){
+#   mod %>%
+#     param(pars) %>%
+#     ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss=1) %>% 
+#     mrgsim(end = 12, delta = 0.1) %>%
+#     dplyr::filter(row_number() > 1) %>%
+#     dplyr::select(time, Cvenous)
+# }
+# 
+# sims <- lapply(lpars, sim, mod=model1) %>% 
+#   bind_rows %>%
+#   group_by(time) %>%
+#   dplyr::mutate(avg = mean(Cvenous),
+#                 low = quantile(Cvenous, probs=0.025), 
+#                 high=quantile(Cvenous, probs=0.975))
+# 
+# 
+# # plot
+# gp1 <- ggplot() + 
+#   geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) + 
+#   geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
+#   geom_line(data = sims, mapping = aes(y=avg, x=time, col="avg"), lwd=1) + 
+#   geom_line(data = sims, mapping = aes(y=low, x=time, col="low"), lwd=1, lty=2) +
+#   geom_line(data = sims, mapping = aes(y=high, x=time, col="high"), lwd=1, lty=2) +
+#   scale_colour_manual(name='', values=c('observed'='black', 
+#                                         'avg'='black', 
+#                                         'low'='black', 
+#                                         'high'='black'), 
+#                       breaks=c("observed","avg","low","high"),
+#                       labels=c("observed","mean","","")) +
+#   guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
+#   ggtitle("a   Adult 200 mg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
+#   scale_y_continuous(breaks = seq(0,100,1)) +
+#   #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
+#   ylim(-0.5,3.5) +
+#   scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
+#   theme_bw() + 
+#   theme(axis.title=element_text(size=12)) +
+#   theme(axis.text=element_text(size=10)) + 
+#   theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
+#   theme(plot.title=element_text(size=15, face="bold")) +
+#   theme(legend.text=element_text(size=10))
+# gp1
+# 
+# 
+# ## Pediatrics
+# load("../data/Fig4d_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
+# 
+# ## sample Cl_Gu and Peff by sampling from MPPGI and fperm
+# set.seed(23142)
+# nSampl <- 1000
+# mppgiSampl <- exp(rnorm(nSampl, mean=log(26/25), sd=0.33))  #lognormal; CV = 33%   
+# fpermSampl <- exp(rnorm(nSampl, mean=log(fperm), sd=0.4))  #lognormal; CV = 40%
+# lpars <- purrr::map2(mppgiSampl, fpermSampl, .f=function(x,y){list(x,y)})  #make a list of parameter samples
+# lpars <- lapply(lpars, function(x) setNames(x, c("MPPGI","fperm")))  #set parameter names
+# 
+# #simulate
+# wt <- 19
+# dose <- 4*wt
+# cmt <- "GUTLUMEN"
+# 
+# sim <- function(pars, mod){
+#   mod %>%
+#     param(pars) %>%
+#     ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss=1) %>% 
+#     mrgsim(end = 12, delta = 0.1) %>%
+#     dplyr::filter(row_number() > 1) %>%
+#     dplyr::select(time, Cvenous)
+# }
+# 
+# sims <- lapply(lpars, sim, mod=model2) %>% 
+#   bind_rows %>%
+#   group_by(time) %>%
+#   dplyr::mutate(avg = mean(Cvenous),
+#                 low = quantile(Cvenous, probs=0.025), 
+#                 high=quantile(Cvenous, probs=0.975))
+# 
+# 
+# gp2 <- ggplot() + 
+#   geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) + 
+#   geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
+#   geom_line(data = sims, mapping = aes(y=avg, x=time, col="avg"), lwd=1) + 
+#   geom_line(data = sims, mapping = aes(y=low, x=time, col="low"), lwd=1, lty=2) +
+#   geom_line(data = sims, mapping = aes(y=high, x=time, col="high"), lwd=1, lty=2) +
+#   scale_colour_manual(name='', values=c('observed'='black', 
+#                                         'avg'='black', 
+#                                         'low'='black', 
+#                                         'high'='black'), 
+#                       breaks=c("observed","avg","low","high"),
+#                       labels=c("observed","mean","","")) +
+#   guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
+#   ggtitle("b   Pediatric 4 mg/kg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
+#   scale_y_continuous(breaks = seq(0,100,1)) +
+#   #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
+#   ylim(-0.5,3.5) +
+#   scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
+#   theme_bw() + 
+#   theme(axis.title=element_text(size=12)) +
+#   theme(axis.text=element_text(size=10)) + 
+#   theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
+#   theme(plot.title=element_text(size=15, face="bold")) +
+#   theme(legend.text=element_text(size=10))
+# gp2
+# 
+# #plot and save
+# g <- grid.arrange(gp1, gp2, ncol=2, nrow=3)
+# ggsave(file="../deliv/fig8.pdf", g, width=10, height=12)
 
 ###################################################################################################
 ###################################################################################################
@@ -967,7 +982,7 @@ df_temp <- data.frame(Dose = c("Adult 200 mg",
 #plot and save
 gp <- ggplot(data=df_temp, aes(Dose, AUC)) +
   geom_bar(stat="identity") +
-  labs(x="", y="AUC (mg.h/L)") +
+  labs(x="", y=expression(paste("AUC"["0-12,ss"], " (mg.h/L)"))) +
   geom_hline(yintercept=auc_pred_adult, lty=2) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 

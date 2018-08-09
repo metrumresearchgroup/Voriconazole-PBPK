@@ -132,6 +132,7 @@ load("sobol_all_objects_auc_previous.RData")  #load results from previous run
 gp_sobol_auc <- ggplot(data=st, aes(x=params, y=original, group=index, shape=index)) +
   geom_point(position=position_dodge(width=0.5)) +
   geom_errorbar(aes(x=params, ymin=min, ymax=max), width=0, position=position_dodge(width=0.5)) +
+  ylim(-0.01,1) +
   labs(title="AUC", y="Index value", x="parameter") +
   theme_bw() +
   theme(axis.text=element_text(size=12), 
@@ -143,6 +144,7 @@ load("sobol_all_objects_cmax_previous.RData")  #load results from previous run
 gp_sobol_cmax <- ggplot(data=st, aes(x=params, y=original, group=index, shape=index)) +
   geom_point(position=position_dodge(width=0.5)) +
   geom_errorbar(aes(x=params, ymin=min, ymax=max), width=0, position=position_dodge(width=0.5)) +
+  ylim(-0.01,1) +
   labs(title="Cmax", y="Index value", x="parameter") +
   theme_bw() +
   theme(axis.text=element_text(size=12), 
