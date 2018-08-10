@@ -14,6 +14,7 @@ library(gridExtra)
 library(magick)
 library(kableExtra)
 library(mrgsolve)  #https://github.com/metrumresearchgroup/mrgsolve
+library(scatterplot3d)
 source("funs.R")
 
 #compile models
@@ -879,6 +880,8 @@ gp1
 
 
 ## get AUC and Cmax samples ##
+aucSampl <- as.numeric(array(dim=c(nSampl,1)))
+cmaxSampl <- as.numeric(array(dim=c(nSampl,1)))
 for(i in 1:nSampl){
   df <- dplyr::filter(sims, id == i)
   aucSampl[i] <- round(calcAUC(df$time, df$Cvenous), 2)
@@ -918,7 +921,7 @@ peff = fperms*A*(MW_eff^(-alpha-beta))*MA/(MW_eff^(-alpha) + B*(MW_eff^(-beta))*
 ##setup dataframe and plot
 df_auc <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_auc)
 
-postscript(file="../deliv/adult_3d_auc.eps")
+postscript(file="../deliv/fig8c.eps")
 scatterplot3d(df_auc,
               main="AUC (Adult)",
               xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
@@ -927,11 +930,12 @@ scatterplot3d(df_auc,
               xlim=c(0,0.7),
               ylim=c(0,0.3),
               zlim=c(0,15),
-              angle=55)
+              angle=55,
+              mar=c(5,3,4,3)+0.7)
 dev.off()
 
-postscript(file="../deliv/adult_3d_cmax.eps")
 df_cmax <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_cmax)
+postscript(file="../deliv/fig8e.eps")
 scatterplot3d(df_cmax,
               main="Cmax (Adult)",
               xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
@@ -940,7 +944,8 @@ scatterplot3d(df_cmax,
               xlim=c(0,0.7),
               ylim=c(0,0.3),
               zlim=c(0,2),
-              angle=55)
+              angle=55,
+              mar=c(5,3,4,3)+0.7)
 dev.off()
 
 
@@ -974,7 +979,8 @@ sims <- lapply(lpars, sim, mod=model2) %>%
   group_by(time) %>%
   dplyr::mutate(avg = mean(Cvenous),
                 low = quantile(Cvenous, probs=0.025),
-                high=quantile(Cvenous, probs=0.975))
+                high=quantile(Cvenous, probs=0.975),
+                id = row_number(time))
 
 
 gp2 <- ggplot() +
@@ -1004,6 +1010,8 @@ gp2 <- ggplot() +
 gp2
 
 ## get AUC and Cmax samples ##
+#aucSampl <- as.numeric(array(dim=c(nSampl,1)))
+#cmaxSampl <- as.numeric(array(dim=c(nSampl,1)))
 for(i in 1:nSampl){
   df <- dplyr::filter(sims, id == i)
   aucSampl[i] <- round(calcAUC(df$time, df$Cvenous), 2)
@@ -1042,8 +1050,7 @@ peff = fperms*A*(MW_eff^(-alpha-beta))*MA/(MW_eff^(-alpha) + B*(MW_eff^(-beta))*
 
 ##setup dataframe and plot
 df_auc <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_auc)
-
-postscript(file="../deliv/pediatric_3d_auc.eps")
+postscript(file="../deliv/fig8d.eps")
 scatterplot3d(df_auc,
               main="AUC (Pediatric)",
               xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
@@ -1052,11 +1059,12 @@ scatterplot3d(df_auc,
               xlim=c(0,0.7),
               ylim=c(0,0.3),
               zlim=c(0,15),
-              angle=55)
+              angle=55,
+              mar=c(5,3,4,3)+0.7)
 dev.off()
 
-postscript(file="../deliv/pediatric_3d_cmax.eps")
 df_cmax <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_cmax)
+postscript(file="../deliv/fig8f.eps")
 scatterplot3d(df_cmax,
               main="Cmax (Pediatric)",
               xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
@@ -1065,7 +1073,8 @@ scatterplot3d(df_cmax,
               xlim=c(0,0.7),
               ylim=c(0,0.3),
               zlim=c(0,2),
-              angle=55)
+              angle=55,
+              mar=c(5,3,4,3)+0.7)
 dev.off()
 
 #plot and save
