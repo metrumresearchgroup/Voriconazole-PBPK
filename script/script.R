@@ -814,132 +814,262 @@ write.csv(table3, file="../deliv/table3.csv", row.names=F, quote=F)
 ###################################################################################################
 ####################################### Chunk 8: Figure 8 #########################################
 ###################################################################################################
-# ## This chunk reproduces Figure S5 plots with the simulations from IIV and uncertainty of CL_Gu and Peff
-# ## Figure S5a
-# 
-# ## Adults
-# load("../data/Fig3b_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
-# 
-# ## sample Cl_Gu and Peff by sampling from MPPGI and fperm
-# set.seed(23142)
-# nSampl <- 1000
-# mppgiSampl <- exp(rnorm(nSampl, mean=log(30.3/25), sd=0.33))  #lognormal; CV = 33%   
-# fpermSampl <- exp(rnorm(nSampl, mean=log(fperm), sd=0.4))  #lognormal; CV = 40%
-# lpars <- purrr::map2(mppgiSampl, fpermSampl, .f=function(x,y){list(x,y)})  #make a list of parameter samples
-# lpars <- lapply(lpars, function(x) setNames(x, c("MPPGI","fperm")))  #set parameter names
-# 
-# #simulate
-# wt <- 73
-# dose <- 200
-# cmt <- "GUTLUMEN"
-# 
-# sim <- function(pars, mod){
-#   mod %>%
-#     param(pars) %>%
-#     ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss=1) %>% 
-#     mrgsim(end = 12, delta = 0.1) %>%
-#     dplyr::filter(row_number() > 1) %>%
-#     dplyr::select(time, Cvenous)
-# }
-# 
-# sims <- lapply(lpars, sim, mod=model1) %>% 
-#   bind_rows %>%
-#   group_by(time) %>%
-#   dplyr::mutate(avg = mean(Cvenous),
-#                 low = quantile(Cvenous, probs=0.025), 
-#                 high=quantile(Cvenous, probs=0.975))
-# 
-# 
-# # plot
-# gp1 <- ggplot() + 
-#   geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) + 
-#   geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
-#   geom_line(data = sims, mapping = aes(y=avg, x=time, col="avg"), lwd=1) + 
-#   geom_line(data = sims, mapping = aes(y=low, x=time, col="low"), lwd=1, lty=2) +
-#   geom_line(data = sims, mapping = aes(y=high, x=time, col="high"), lwd=1, lty=2) +
-#   scale_colour_manual(name='', values=c('observed'='black', 
-#                                         'avg'='black', 
-#                                         'low'='black', 
-#                                         'high'='black'), 
-#                       breaks=c("observed","avg","low","high"),
-#                       labels=c("observed","mean","","")) +
-#   guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
-#   ggtitle("a   Adult 200 mg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
-#   scale_y_continuous(breaks = seq(0,100,1)) +
-#   #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
-#   ylim(-0.5,3.5) +
-#   scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
-#   theme_bw() + 
-#   theme(axis.title=element_text(size=12)) +
-#   theme(axis.text=element_text(size=10)) + 
-#   theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
-#   theme(plot.title=element_text(size=15, face="bold")) +
-#   theme(legend.text=element_text(size=10))
-# gp1
-# 
-# 
-# ## Pediatrics
-# load("../data/Fig4d_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
-# 
-# ## sample Cl_Gu and Peff by sampling from MPPGI and fperm
-# set.seed(23142)
-# nSampl <- 1000
-# mppgiSampl <- exp(rnorm(nSampl, mean=log(26/25), sd=0.33))  #lognormal; CV = 33%   
-# fpermSampl <- exp(rnorm(nSampl, mean=log(fperm), sd=0.4))  #lognormal; CV = 40%
-# lpars <- purrr::map2(mppgiSampl, fpermSampl, .f=function(x,y){list(x,y)})  #make a list of parameter samples
-# lpars <- lapply(lpars, function(x) setNames(x, c("MPPGI","fperm")))  #set parameter names
-# 
-# #simulate
-# wt <- 19
-# dose <- 4*wt
-# cmt <- "GUTLUMEN"
-# 
-# sim <- function(pars, mod){
-#   mod %>%
-#     param(pars) %>%
-#     ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss=1) %>% 
-#     mrgsim(end = 12, delta = 0.1) %>%
-#     dplyr::filter(row_number() > 1) %>%
-#     dplyr::select(time, Cvenous)
-# }
-# 
-# sims <- lapply(lpars, sim, mod=model2) %>% 
-#   bind_rows %>%
-#   group_by(time) %>%
-#   dplyr::mutate(avg = mean(Cvenous),
-#                 low = quantile(Cvenous, probs=0.025), 
-#                 high=quantile(Cvenous, probs=0.975))
-# 
-# 
-# gp2 <- ggplot() + 
-#   geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) + 
-#   geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
-#   geom_line(data = sims, mapping = aes(y=avg, x=time, col="avg"), lwd=1) + 
-#   geom_line(data = sims, mapping = aes(y=low, x=time, col="low"), lwd=1, lty=2) +
-#   geom_line(data = sims, mapping = aes(y=high, x=time, col="high"), lwd=1, lty=2) +
-#   scale_colour_manual(name='', values=c('observed'='black', 
-#                                         'avg'='black', 
-#                                         'low'='black', 
-#                                         'high'='black'), 
-#                       breaks=c("observed","avg","low","high"),
-#                       labels=c("observed","mean","","")) +
-#   guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
-#   ggtitle("b   Pediatric 4 mg/kg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
-#   scale_y_continuous(breaks = seq(0,100,1)) +
-#   #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
-#   ylim(-0.5,3.5) +
-#   scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
-#   theme_bw() + 
-#   theme(axis.title=element_text(size=12)) +
-#   theme(axis.text=element_text(size=10)) + 
-#   theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
-#   theme(plot.title=element_text(size=15, face="bold")) +
-#   theme(legend.text=element_text(size=10))
-# gp2
-# 
-# #plot and save
-# g <- grid.arrange(gp1, gp2, ncol=2, nrow=3)
-# ggsave(file="../deliv/fig8.pdf", g, width=10, height=12)
+## This chunk reproduces Figure S5 plots with the simulations from IIV and uncertainty of CL_Gu and Peff
+## Figure S5a
+
+## Adults
+load("../data/Fig3b_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
+
+## sample Cl_Gu and Peff by sampling from MPPGI and fperm
+set.seed(23142)
+nSampl <- 1000
+mppgiSampl <- exp(rnorm(nSampl, mean=log(30.3/25), sd=0.33))  #lognormal; CV = 33%
+fpermSampl <- exp(rnorm(nSampl, mean=log(fperm), sd=0.4))  #lognormal; CV = 40%
+lpars <- purrr::map2(mppgiSampl, fpermSampl, .f=function(x,y){list(x,y)})  #make a list of parameter samples
+lpars <- lapply(lpars, function(x) setNames(x, c("MPPGI","fperm")))  #set parameter names
+
+#simulate
+wt <- 73
+dose <- 200
+cmt <- "GUTLUMEN"
+
+sim <- function(pars, mod){
+  mod %>%
+    param(pars) %>%
+    ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss=1) %>%
+    mrgsim(end = 12, delta = 0.1) %>%
+    dplyr::filter(row_number() > 1) %>%
+    dplyr::select(time, Cvenous)
+}
+
+sims <- lapply(lpars, sim, mod=model1) %>%
+  bind_rows %>%
+  group_by(time) %>%
+  dplyr::mutate(avg = mean(Cvenous),
+                low = quantile(Cvenous, probs=0.025),
+                high = quantile(Cvenous, probs=0.975),
+                id = row_number(time))
+
+# plot
+gp1 <- ggplot() +
+  geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) +
+  geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
+  geom_line(data = sims, mapping = aes(y=avg, x=time, col="avg"), lwd=1) +
+  geom_line(data = sims, mapping = aes(y=low, x=time, col="low"), lwd=1, lty=2) +
+  geom_line(data = sims, mapping = aes(y=high, x=time, col="high"), lwd=1, lty=2) +
+  scale_colour_manual(name='', values=c('observed'='black',
+                                        'avg'='black',
+                                        'low'='black',
+                                        'high'='black'),
+                      breaks=c("observed","avg","low","high"),
+                      labels=c("observed","mean","","")) +
+  guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
+  ggtitle("a   Adult 200 mg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
+  scale_y_continuous(breaks = seq(0,100,1)) +
+  #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
+  ylim(-0.5,3.5) +
+  scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
+  theme_bw() +
+  theme(axis.title=element_text(size=12)) +
+  theme(axis.text=element_text(size=10)) +
+  theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
+  theme(plot.title=element_text(size=15, face="bold")) +
+  theme(legend.text=element_text(size=10))
+gp1
+
+
+## get AUC and Cmax samples ##
+for(i in 1:nSampl){
+  df <- dplyr::filter(sims, id == i)
+  aucSampl[i] <- round(calcAUC(df$time, df$Cvenous), 2)
+  cmaxSampl[i] <- round(max(df$Cvenous), 2)
+}
+
+## get AUC and Cmax for obs
+## pad observed data till 12 hours
+df_temp <- obs %>%
+  dplyr::filter(time > 7)
+mod <- lm(obs~time, data=df_temp)
+obs2 <- data.frame(time=12, obs=as.numeric(as.character(predict.lm(mod, newdata=data.frame(time=12)))), sd=NA)
+obs <- bind_rows(obs, obs2)
+
+auc_obs <- round(auc_partial(obs$time, obs$obs, range=c(0,12)), 2)
+cmax_obs <- round(max(obs$obs), 2)
+
+## get AUC and Cmax difference
+delta_auc <- abs(auc_obs - aucSampl)
+delta_cmax <- abs(cmax_obs - cmaxSampl)
+
+## calculate Cl_Gu
+bw <- 73
+VmaxG <- 40
+KmG <- 9.3
+VguWall <- 0.65
+fumic <- 0.711
+mppgis <- lapply(lpars, function(x) x$MPPGI)
+mppgis <- unlist(mppgis)
+clgu <- ((VmaxG/KmG)*mppgis*VguWall)/(fumic*bw)  #(mL/min/kg)
+
+## calculate Peff
+fperms <- lapply(lpars, function(x) x$fperm)
+fperms <- unlist(fperms) 
+peff = fperms*A*(MW_eff^(-alpha-beta))*MA/(MW_eff^(-alpha) + B*(MW_eff^(-beta))*MA)  #cm/sec
+
+##setup dataframe and plot
+df_auc <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_auc)
+
+postscript(file="../deliv/adult_3d_auc.eps")
+scatterplot3d(df_auc,
+              main="Adult",
+              xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
+              ylab=expression(paste("P"[eff], " x ", 10^-4, " (cm/s)")),
+              zlab=expression(paste(delta[AUC], " (mg.h/L)")),
+              xlim=c(0,0.7),
+              ylim=c(0,0.3),
+              zlim=c(0,15),
+              angle=55)
+dev.off()
+
+postscript(file="../deliv/adult_3d_cmax.eps")
+df_cmax <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_cmax)
+scatterplot3d(df_cmax,
+              main="Adult",
+              xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
+              ylab=expression(paste("P"[eff], " x ", 10^-4, " (cm/s)")),
+              zlab=expression(paste(delta[Cmax], " (mg/L)")),
+              xlim=c(0,0.7),
+              ylim=c(0,0.3),
+              zlim=c(0,2),
+              angle=55)
+dev.off()
+
+## Pediatrics
+load("../data/Fig4d_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
+
+## sample Cl_Gu and Peff by sampling from MPPGI and fperm
+set.seed(23142)
+nSampl <- 1000
+mppgiSampl <- exp(rnorm(nSampl, mean=log(26/25), sd=0.33))  #lognormal; CV = 33%
+fpermSampl <- exp(rnorm(nSampl, mean=log(fperm), sd=0.4))  #lognormal; CV = 40%
+lpars <- purrr::map2(mppgiSampl, fpermSampl, .f=function(x,y){list(x,y)})  #make a list of parameter samples
+lpars <- lapply(lpars, function(x) setNames(x, c("MPPGI","fperm")))  #set parameter names
+
+#simulate
+wt <- 19
+dose <- 4*wt
+cmt <- "GUTLUMEN"
+
+sim <- function(pars, mod){
+  mod %>%
+    param(pars) %>%
+    ev(cmt = cmt, amt = dose, ii = 12, addl =  13, ss=1) %>%
+    mrgsim(end = 12, delta = 0.1) %>%
+    dplyr::filter(row_number() > 1) %>%
+    dplyr::select(time, Cvenous)
+}
+
+sims <- lapply(lpars, sim, mod=model2) %>%
+  bind_rows %>%
+  group_by(time) %>%
+  dplyr::mutate(avg = mean(Cvenous),
+                low = quantile(Cvenous, probs=0.025),
+                high=quantile(Cvenous, probs=0.975))
+
+
+gp2 <- ggplot() +
+  geom_point(data = obs, mapping = aes(x=time, y=obs, col="observed"), size=2.5) +
+  geom_errorbar(data = obs, mapping = aes(x = time, y = obs, ymin=obs-sd, ymax=obs+sd), width=0) +
+  geom_line(data = sims, mapping = aes(y=avg, x=time, col="avg"), lwd=1) +
+  geom_line(data = sims, mapping = aes(y=low, x=time, col="low"), lwd=1, lty=2) +
+  geom_line(data = sims, mapping = aes(y=high, x=time, col="high"), lwd=1, lty=2) +
+  scale_colour_manual(name='', values=c('observed'='black',
+                                        'avg'='black',
+                                        'low'='black',
+                                        'high'='black'),
+                      breaks=c("observed","avg","low","high"),
+                      labels=c("observed","mean","","")) +
+  guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
+  ggtitle("b   Pediatric 4 mg/kg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
+  scale_y_continuous(breaks = seq(0,100,1)) +
+  #scale_y_continuous(trans="log", breaks = c(0.1,1,10), limits = c(0.1,10)) +
+  ylim(-0.5,3.5) +
+  scale_x_continuous(breaks = seq(0,12,2), limits = c(0,12)) +
+  theme_bw() +
+  theme(axis.title=element_text(size=12)) +
+  theme(axis.text=element_text(size=10)) +
+  theme(axis.title.y=element_text(margin=margin(0,15,0,0))) +
+  theme(plot.title=element_text(size=15, face="bold")) +
+  theme(legend.text=element_text(size=10))
+gp2
+
+## get AUC and Cmax samples ##
+for(i in 1:nSampl){
+  df <- dplyr::filter(sims, id == i)
+  aucSampl[i] <- round(calcAUC(df$time, df$Cvenous), 2)
+  cmaxSampl[i] <- round(max(df$Cvenous), 2)
+}
+
+## get AUC and Cmax for obs
+## pad observed data till 12 hours
+df_temp <- obs %>%
+  dplyr::filter(time > 7)
+mod <- lm(obs~time, data=df_temp)
+obs2 <- data.frame(time=12, obs=as.numeric(as.character(predict.lm(mod, newdata=data.frame(time=12)))), sd=NA)
+obs <- bind_rows(obs, obs2)
+
+auc_obs <- round(auc_partial(obs$time, obs$obs, range=c(0,12)), 2)
+cmax_obs <- round(max(obs$obs), 2)
+
+## get AUC and Cmax difference
+delta_auc <- abs(auc_obs - aucSampl)
+delta_cmax <- abs(cmax_obs - cmaxSampl)
+
+## calculate Cl_Gu
+bw <- 19
+VmaxG <- 120.5
+KmG <- 11
+VguWall <- 0.22
+fumic <- 0.711
+mppgis <- lapply(lpars, function(x) x$MPPGI)
+mppgis <- unlist(mppgis)
+clgu <- ((VmaxG/KmG)*mppgis*VguWall)/(fumic*bw)  #(mL/min/kg)
+
+## calculate Peff
+fperms <- lapply(lpars, function(x) x$fperm)
+fperms <- unlist(fperms) 
+peff = fperms*A*(MW_eff^(-alpha-beta))*MA/(MW_eff^(-alpha) + B*(MW_eff^(-beta))*MA)  #cm/sec
+
+##setup dataframe and plot
+df_auc <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_auc)
+
+postscript(file="../deliv/pediatric_3d_auc.eps")
+scatterplot3d(df_auc,
+              main="Pediatric",
+              xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
+              ylab=expression(paste("P"[eff], " x ", 10^-4, " (cm/s)")),
+              zlab=expression(paste(delta[AUC], " (mg.h/L)")),
+              xlim=c(0,0.7),
+              ylim=c(0,0.3),
+              zlim=c(0,15),
+              angle=55)
+dev.off()
+
+postscript(file="../deliv/pediatric_3d_cmax.eps")
+df_cmax <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_cmax)
+scatterplot3d(df_cmax,
+              main="Pediatric",
+              xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
+              ylab=expression(paste("P"[eff], " x ", 10^-4, " (cm/s)")),
+              zlab=expression(paste(delta[Cmax], " (mg/L)")),
+              xlim=c(0,0.7),
+              ylim=c(0,0.3),
+              zlim=c(0,2),
+              angle=55)
+dev.off()
+
+#plot and save
+g <- grid.arrange(gp1, gp2, ncol=2, nrow=3)
+ggsave(file="../deliv/fig8.pdf", g, width=10, height=12)
 
 ###################################################################################################
 ###################################################################################################

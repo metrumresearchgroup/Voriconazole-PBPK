@@ -8,3 +8,9 @@ run_sim <- function(mod, cmt, dose, rate=0){
     as.data.frame() %>%
     dplyr::filter(row_number() > 1)
 }
+
+
+## calculate AUC
+calcAUC <- function(idv, dv){
+  auc_partial(idv, dv, range = c(0,12))
+}
