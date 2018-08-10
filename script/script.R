@@ -920,7 +920,7 @@ df_auc <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_auc)
 
 postscript(file="../deliv/adult_3d_auc.eps")
 scatterplot3d(df_auc,
-              main="Adult",
+              main="AUC (Adult)",
               xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
               ylab=expression(paste("P"[eff], " x ", 10^-4, " (cm/s)")),
               zlab=expression(paste(delta[AUC], " (mg.h/L)")),
@@ -933,7 +933,7 @@ dev.off()
 postscript(file="../deliv/adult_3d_cmax.eps")
 df_cmax <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_cmax)
 scatterplot3d(df_cmax,
-              main="Adult",
+              main="Cmax (Adult)",
               xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
               ylab=expression(paste("P"[eff], " x ", 10^-4, " (cm/s)")),
               zlab=expression(paste(delta[Cmax], " (mg/L)")),
@@ -942,6 +942,7 @@ scatterplot3d(df_cmax,
               zlim=c(0,2),
               angle=55)
 dev.off()
+
 
 ## Pediatrics
 load("../data/Fig4d_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
@@ -1044,7 +1045,7 @@ df_auc <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_auc)
 
 postscript(file="../deliv/pediatric_3d_auc.eps")
 scatterplot3d(df_auc,
-              main="Pediatric",
+              main="AUC (Pediatric)",
               xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
               ylab=expression(paste("P"[eff], " x ", 10^-4, " (cm/s)")),
               zlab=expression(paste(delta[AUC], " (mg.h/L)")),
@@ -1057,7 +1058,7 @@ dev.off()
 postscript(file="../deliv/pediatric_3d_cmax.eps")
 df_cmax <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_cmax)
 scatterplot3d(df_cmax,
-              main="Pediatric",
+              main="Cmax (Pediatric)",
               xlab=expression(paste("Cl"[Gu], " (mL/min/kg)")),
               ylab=expression(paste("P"[eff], " x ", 10^-4, " (cm/s)")),
               zlab=expression(paste(delta[Cmax], " (mg/L)")),
