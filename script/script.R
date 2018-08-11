@@ -15,6 +15,7 @@ library(magick)
 library(kableExtra)
 library(mrgsolve)  #https://github.com/metrumresearchgroup/mrgsolve
 library(scatterplot3d)
+library(plotly)
 source("funs.R")
 
 #compile models
@@ -951,21 +952,33 @@ dev.off()
 ## make the interactive 3d plot and save as html
 py_auc <- plot_ly(data=df_auc, x=~Cl_Gu, y=~Peff, z=~delta, 
                   marker=list(size=3, color=~delta, colorscale = "Greys", showscale=T)) %>%
-  layout(title='Cmax (Adult)', 
+  layout(title='AUC (Adult)', 
          scene=list(xaxis=list(range=c(0,0.7)),
                     yaxis=list(range=c(0,0.3)),
-                    zaxis=list(title="delta(Cmax)", range=c(0,15))))
+                    zaxis=list(title="d(AUC)", range=c(0,15))))
 py_auc
+
+# ## binary ##
+# df <- df_auc %>% dplyr::mutate(critical = ifelse(delta<=0.1, "good", "bad"))
+# py_auc <- plot_ly(data=df, x=~Cl_Gu, y=~Peff, z=~delta, color=~critical, colors=c('#999999','#000000'), marker=list(size=3))
+#   add_markers() %>%
+#   layout(title='AUC (Adult)',
+#          scene=list(xaxis=list(range=c(0,0.7)),
+#                     yaxis=list(range=c(0,0.3)),
+#                     zaxis=list(title="d(AUC)", range=c(0,15))))
+# py_auc
+
 py_cmax <- plot_ly(data=df_cmax, x=~Cl_Gu, y=~Peff, z=~delta, 
                    marker=list(size=3, color=~delta, colorscale = "Greys", showscale=T)) %>%
   layout(title='Cmax (Adult)', 
          scene=list(xaxis=list(range=c(0,0.7)),
                     yaxis=list(range=c(0,0.3)),
-                    zaxis=list(title="delta(Cmax)", range=c(0,2))))
+                    zaxis=list(title="d(Cmax)", range=c(0,2))))
 py_cmax
 
 htmlwidgets::saveWidget(py_auc, "../deliv/fig8c.html")
 htmlwidgets::saveWidget(py_cmax, "../deliv/fig8e.html")
+
 
 ## Pediatrics
 load("../data/Fig4d_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
@@ -1101,14 +1114,14 @@ py_auc <- plot_ly(data=df_auc, x=~Cl_Gu, y=~Peff, z=~delta,
   layout(title='AUC (Pediatric)', 
          scene=list(xaxis=list(range=c(0,0.7)),
                     yaxis=list(range=c(0,0.3)),
-                    zaxis=list(title="delta(Cmax)", range=c(0,15))))
+                    zaxis=list(title="d(AUC)", range=c(0,15))))
 py_auc
 py_cmax <- plot_ly(data=df_cmax, x=~Cl_Gu, y=~Peff, z=~delta, 
                   marker=list(size=3, color=~delta, colorscale = "Greys", showscale=T)) %>%
   layout(title='Cmax (Pediatric)', 
          scene=list(xaxis=list(range=c(0,0.7)),
                     yaxis=list(range=c(0,0.3)),
-                    zaxis=list(title="delta(Cmax)", range=c(0,2))))
+                    zaxis=list(title="d(Cmax)", range=c(0,2))))
 py_cmax
 
 htmlwidgets::saveWidget(py_auc, "../deliv/fig8d.html")
