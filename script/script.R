@@ -948,6 +948,24 @@ scatterplot3d(df_cmax,
               mar=c(5,3,4,3)+0.7)
 dev.off()
 
+## make the interactive 3d plot and save as html
+py_auc <- plot_ly(data=df_auc, x=~Cl_Gu, y=~Peff, z=~delta, 
+                  marker=list(size=3, color=~delta, colorscale = "Greys", showscale=T)) %>%
+  layout(title='Cmax (Adult)', 
+         scene=list(xaxis=list(range=c(0,0.7)),
+                    yaxis=list(range=c(0,0.3)),
+                    zaxis=list(title="delta(Cmax)", range=c(0,15))))
+py_auc
+py_cmax <- plot_ly(data=df_cmax, x=~Cl_Gu, y=~Peff, z=~delta, 
+                   marker=list(size=3, color=~delta, colorscale = "Greys", showscale=T)) %>%
+  layout(title='Cmax (Adult)', 
+         scene=list(xaxis=list(range=c(0,0.7)),
+                    yaxis=list(range=c(0,0.3)),
+                    zaxis=list(title="delta(Cmax)", range=c(0,2))))
+py_cmax
+
+htmlwidgets::saveWidget(py_auc, "../deliv/fig8c.html")
+htmlwidgets::saveWidget(py_cmax, "../deliv/fig8e.html")
 
 ## Pediatrics
 load("../data/Fig4d_obs.Rda")  ##load observed data (digitized) from fig 3b in the ZT paper
@@ -1048,7 +1066,7 @@ fperms <- lapply(lpars, function(x) x$fperm)
 fperms <- unlist(fperms) 
 peff = fperms*A*(MW_eff^(-alpha-beta))*MA/(MW_eff^(-alpha) + B*(MW_eff^(-beta))*MA)  #cm/sec
 
-##setup dataframe and plot
+##setup dataframe and make 3d plot and save
 df_auc <- data.frame(Cl_Gu=clgu, Peff=peff*1e4, delta=delta_auc)
 postscript(file="../deliv/fig8d.eps")
 scatterplot3d(df_auc,
@@ -1076,6 +1094,25 @@ scatterplot3d(df_cmax,
               angle=55,
               mar=c(5,3,4,3)+0.7)
 dev.off()
+
+## make the interactive 3d plot and save as html
+py_auc <- plot_ly(data=df_auc, x=~Cl_Gu, y=~Peff, z=~delta, 
+              marker=list(size=3, color=~delta, colorscale = "Greys", showscale=T)) %>%
+  layout(title='AUC (Pediatric)', 
+         scene=list(xaxis=list(range=c(0,0.7)),
+                    yaxis=list(range=c(0,0.3)),
+                    zaxis=list(title="delta(Cmax)", range=c(0,15))))
+py_auc
+py_cmax <- plot_ly(data=df_cmax, x=~Cl_Gu, y=~Peff, z=~delta, 
+                  marker=list(size=3, color=~delta, colorscale = "Greys", showscale=T)) %>%
+  layout(title='Cmax (Pediatric)', 
+         scene=list(xaxis=list(range=c(0,0.7)),
+                    yaxis=list(range=c(0,0.3)),
+                    zaxis=list(title="delta(Cmax)", range=c(0,2))))
+py_cmax
+
+htmlwidgets::saveWidget(py_auc, "../deliv/fig8d.html")
+htmlwidgets::saveWidget(py_cmax, "../deliv/fig8f.html")
 
 #plot and save
 g <- grid.arrange(gp1, gp2, ncol=2, nrow=3)

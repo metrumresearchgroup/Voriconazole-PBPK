@@ -3,7 +3,7 @@
 author <- c("ahmede")
 
 pkgs <- c("dplyr", "mrgsolve", "sensitivity", "ggplot2", "magrittr", "shiny", "PKPDmisc", "kableExtra", 
-          "gridExtra", "scatterplot3d","magick")
+          "gridExtra", "scatterplot3d","magick", "plotly")
 
 
 pkgRoot <- "pkg"
