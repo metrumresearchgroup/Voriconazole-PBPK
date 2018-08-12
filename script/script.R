@@ -951,11 +951,15 @@ dev.off()
 
 ## make the interactive 3d plot and save as html
 py_auc <- plot_ly(data=df_auc, x=~Cl_Gu, y=~Peff, z=~delta, 
-                  marker=list(size=3, color=~delta, colorscale = "Greys", showscale=T)) %>%
+                  marker=list(size=3, 
+                              color=~delta, 
+                              colorscale = "Greys", 
+                              cauto=F, cmin=0, cmax=10,
+                              showscale=T)) %>%
   layout(title='AUC (Adult)', 
-         scene=list(xaxis=list(range=c(0,0.7)),
-                    yaxis=list(range=c(0,0.3)),
-                    zaxis=list(title="d(AUC)", range=c(0,15))))
+         scene=list(xaxis=list(range=c(0,0.7), title="Cl_Gu"),
+                    yaxis=list(range=c(0,0.3), title="Peff"),
+                    zaxis=list(title="d(AUC)", range=c(0,10))))
 py_auc
 
 # ## binary ##
@@ -969,11 +973,15 @@ py_auc
 # py_auc
 
 py_cmax <- plot_ly(data=df_cmax, x=~Cl_Gu, y=~Peff, z=~delta, 
-                   marker=list(size=3, color=~delta, colorscale = "Greys", showscale=T)) %>%
+                   marker=list(size=3, 
+                               color=~delta, 
+                               colorscale = "Greys", 
+                               cauto=F, cmin=0, cmax=1.5,
+                               showscale=T)) %>%
   layout(title='Cmax (Adult)', 
-         scene=list(xaxis=list(range=c(0,0.7)),
-                    yaxis=list(range=c(0,0.3)),
-                    zaxis=list(title="d(Cmax)", range=c(0,2))))
+         scene=list(xaxis=list(range=c(0,0.7), title="Cl_Gu"),
+                    yaxis=list(range=c(0,0.3), title="Peff"),
+                    zaxis=list(title="d(Cmax)", range=c(0,1.5))))
 py_cmax
 
 htmlwidgets::saveWidget(py_auc, "../deliv/fig8c.html")
@@ -1110,18 +1118,26 @@ dev.off()
 
 ## make the interactive 3d plot and save as html
 py_auc <- plot_ly(data=df_auc, x=~Cl_Gu, y=~Peff, z=~delta, 
-              marker=list(size=3, color=~delta, colorscale = "Greys", showscale=T)) %>%
+              marker=list(size=3, 
+                          color=~delta, 
+                          colorscale = "Greys", 
+                          cauto=F, cmin=0, cmax=10,
+                          showscale=T)) %>%
   layout(title='AUC (Pediatric)', 
-         scene=list(xaxis=list(range=c(0,0.7)),
-                    yaxis=list(range=c(0,0.3)),
-                    zaxis=list(title="d(AUC)", range=c(0,15))))
+         scene=list(xaxis=list(range=c(0,0.7), title="Cl_Gu"),
+                    yaxis=list(range=c(0,0.3), title="Peff"),
+                    zaxis=list(title="d(AUC)", range=c(0,10))))
 py_auc
 py_cmax <- plot_ly(data=df_cmax, x=~Cl_Gu, y=~Peff, z=~delta, 
-                  marker=list(size=3, color=~delta, colorscale = "Greys", showscale=T)) %>%
+                  marker=list(size=3, 
+                              color=~delta, 
+                              colorscale = "Greys", 
+                              cauto=F, cmin=0, cmax=1.5,
+                              showscale=T)) %>%
   layout(title='Cmax (Pediatric)', 
-         scene=list(xaxis=list(range=c(0,0.7)),
-                    yaxis=list(range=c(0,0.3)),
-                    zaxis=list(title="d(Cmax)", range=c(0,2))))
+         scene=list(xaxis=list(range=c(0,0.7), title="Cl_Gu"),
+                    yaxis=list(range=c(0,0.3), title="Peff"),
+                    zaxis=list(title="d(Cmax)", range=c(0,1.5))))
 py_cmax
 
 htmlwidgets::saveWidget(py_auc, "../deliv/fig8d.html")
