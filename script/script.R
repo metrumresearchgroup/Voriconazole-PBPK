@@ -3,6 +3,8 @@
 #First thing is to set working directory to "script" directory using the function: setwd()
 #Note: All observed data and Zane and Thakker predictions were digitized from Zane and Thakker (ZT) paper. Zane and Thakker. Clin Pharmacokinet (2014) 53:1171–1182
 #Note: All digitization was done using WebPlotDigitizer version 3.12 developed by Ankit Rohatgi https://automeris.io/WebPlotDigitizer
+#clean workspace
+rm(list=ls())
 
 #loading libraries
 .libPaths("lib")
@@ -847,7 +849,7 @@ sim <- function(pars, mod){
 sims <- lapply(lpars, sim, mod=model1) %>%
   bind_rows %>%
   group_by(time) %>%
-  dplyr::mutate(avg = mean(Cvenous),
+  dplyr::mutate(avg = median(Cvenous),
                 low = quantile(Cvenous, probs=0.025),
                 high = quantile(Cvenous, probs=0.975),
                 id = row_number(time))
@@ -864,7 +866,7 @@ gp1 <- ggplot() +
                                         'low'='black',
                                         'high'='black'),
                       breaks=c("observed","avg","low","high"),
-                      labels=c("observed","mean","","")) +
+                      labels=c("observed","median","","")) +
   guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
   ggtitle("a   Adult 200 mg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
   scale_y_continuous(breaks = seq(0,100,1)) +
@@ -1016,7 +1018,7 @@ sim <- function(pars, mod){
 sims <- lapply(lpars, sim, mod=model2) %>%
   bind_rows %>%
   group_by(time) %>%
-  dplyr::mutate(avg = mean(Cvenous),
+  dplyr::mutate(avg = median(Cvenous),
                 low = quantile(Cvenous, probs=0.025),
                 high=quantile(Cvenous, probs=0.975),
                 id = row_number(time))
@@ -1033,7 +1035,7 @@ gp2 <- ggplot() +
                                         'low'='black',
                                         'high'='black'),
                       breaks=c("observed","avg","low","high"),
-                      labels=c("observed","mean","","")) +
+                      labels=c("observed","median","","")) +
   guides(colour = guide_legend(override.aes = list(linetype=c(0,1,0,0), shape=c(16, NA, NA, NA)))) +
   ggtitle("b   Pediatric 4 mg/kg PO") + xlab("time (h)") + ylab("Plasma concentration (mg/L)") +
   scale_y_continuous(breaks = seq(0,100,1)) +
